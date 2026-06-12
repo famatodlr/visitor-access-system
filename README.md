@@ -1,8 +1,8 @@
 # Plant Access Control
 
 Plant Access Control is a visitor registration and access-tracking system for
-industrial facilities. This repository contains the initial Next.js foundation
-for the application.
+industrial facilities. This repository contains a small full-stack Next.js
+application for guard authentication, visitor registration and access history.
 
 ## Stack
 
@@ -42,11 +42,11 @@ Variables introduced by the scaffold:
 
 - `NODE_ENV`: runtime environment.
 - `NEXT_PUBLIC_APP_NAME`: public application name.
-- `POSTGRES_USER`: local PostgreSQL user.
-- `POSTGRES_PASSWORD`: local PostgreSQL password.
-- `POSTGRES_DB`: local PostgreSQL database name.
+- `POSTGRES_USER`: local PostgreSQL user for host-run PostgreSQL commands.
+- `POSTGRES_PASSWORD`: local PostgreSQL password for host-run PostgreSQL commands.
+- `POSTGRES_DB`: local PostgreSQL database name for host-run PostgreSQL commands.
 - `DATABASE_URL`: PostgreSQL connection string used by Prisma. The example
-  uses the Docker Compose service host `db`.
+  uses `localhost` for commands run from the host machine.
 - `DIRECT_URL`: direct PostgreSQL connection string used by Prisma migrations
   and schema operations. The local example matches `DATABASE_URL`.
 - `GUARD_PIN`: PIN entered by the guard to authenticate.
@@ -123,6 +123,10 @@ stored, and the QR token is generated server-side. `photoDataUrl` is stored
 directly in PostgreSQL for the challenge MVP; object storage and QR image
 generation are intentionally out of scope.
 
+Successful registration persists the visitor and the initial access entry in a
+single database transaction. If either write fails, the registration does not
+leave a partial visitor record behind.
+
 With the application running, verify the endpoint with curl:
 
 ```bash
@@ -186,6 +190,17 @@ Run the application and PostgreSQL locally:
 docker compose up --build
 ```
 
+Docker Compose is intentionally pinned to its local PostgreSQL service:
+
+```text
+postgresql://postgres:postgres@db:5432/geno_challenge?schema=public
+```
+
+This prevents local Docker runs from accidentally inheriting a Neon
+`DATABASE_URL` from `.env`. Use Neon only when you intentionally configure a
+deployment environment or run local commands with explicit Neon connection
+strings.
+
 Stop the containers:
 
 ```bash
@@ -204,14 +219,11 @@ Start only PostgreSQL for local Prisma commands:
 docker compose up -d db
 ```
 
-The `.env.example` `DATABASE_URL` and `DIRECT_URL` use `db` because they are
-read from inside Docker Compose containers. When running Prisma from the host
-machine, override the host to `localhost`:
+The `.env.example` `DATABASE_URL` and `DIRECT_URL` use `localhost` because they
+are read by commands run from the host machine:
 
 ```bash
-DATABASE_URL="postgresql://plant_access:plant_access_password@localhost:5432/plant_access_control?schema=public" \
-DIRECT_URL="postgresql://plant_access:plant_access_password@localhost:5432/plant_access_control?schema=public" \
-  npm run prisma:migrate -- --name add_visitors_entries
+npm run prisma:migrate -- --name add_visitors_entries
 ```
 
 Validate the schema, generate the Prisma client and open Prisma Studio:
@@ -245,7 +257,9 @@ Run the project checks:
 
 ```bash
 npm run lint
+npm test
 npx tsc --noEmit
+npx prisma validate
 npm run build
 docker compose build app
 ```
@@ -253,8 +267,8 @@ docker compose build app
 Verify the database schema in Docker PostgreSQL:
 
 ```bash
-docker compose exec db psql -U plant_access -d plant_access_control -c '\d "Visitor"'
-docker compose exec db psql -U plant_access -d plant_access_control -c '\d "Entry"'
+docker compose exec db psql -U postgres -d geno_challenge -c '\d "Visitor"'
+docker compose exec db psql -U postgres -d geno_challenge -c '\d "Entry"'
 ```
 
 Verify the Docker app responds:
@@ -267,8 +281,11 @@ After creating a visitor, confirm persistence in the configured database without
 printing secrets. For Docker PostgreSQL:
 
 ```bash
-docker compose exec db psql -U plant_access -d plant_access_control \
+docker compose exec db psql -U postgres -d geno_challenge \
   -c 'select id, name, dni, company, sector, "qrToken", "createdAt" from "Visitor" order by "createdAt" desc limit 5;'
+
+docker compose exec db psql -U postgres -d geno_challenge \
+  -c 'select id, "visitorId", "createdAt" from "Entry" order by "createdAt" desc limit 5;'
 ```
 
 For Neon, keep the real `DATABASE_URL` and `DIRECT_URL` in local or deployment

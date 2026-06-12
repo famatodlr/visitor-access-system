@@ -52,6 +52,8 @@ Variables introduced by the scaffold:
 - `GUARD_PIN`: PIN entered by the guard to authenticate.
 - `SESSION_SECRET`: long random secret used to sign and verify the guard
   session cookie.
+- `SESSION_COOKIE_SECURE`: set to `false` for local HTTP Docker runs. Leave it
+  unset or use a secure value in HTTPS production deployments.
 
 For Neon, use the two connection strings from the Neon project dashboard:
 

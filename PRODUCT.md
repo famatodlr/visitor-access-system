@@ -142,13 +142,14 @@ Fields:
 
 id
 visitorId
-createdAt
+arrivedAt
 
 Rules:
 
 * A visitor can have many entries.
 * Entries are immutable historical records.
 * Entries are ordered chronologically.
+* Arrival timestamps are stored as database DateTime instants.
 
 ⸻
 

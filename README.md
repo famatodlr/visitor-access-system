@@ -178,6 +178,11 @@ Successful registration persists the visitor and the initial access entry in a
 single database transaction. If either write fails, the registration does not
 leave a partial visitor record behind.
 
+Entry arrival timestamps are stored as database `DateTime` instants in
+`Entry.arrivedAt`. Future UI and reporting surfaces should format those
+timestamps for display using the IANA timezone
+`America/Argentina/Buenos_Aires`; do not store formatted timestamp strings.
+
 With the application running, verify the endpoint with curl:
 
 ```bash
@@ -382,7 +387,7 @@ docker compose exec db psql -U postgres -d geno_challenge \
   -c 'select id, name, dni, company, sector, "qrToken", "createdAt" from "Visitor" order by "createdAt" desc limit 5;'
 
 docker compose exec db psql -U postgres -d geno_challenge \
-  -c 'select id, "visitorId", "createdAt" from "Entry" order by "createdAt" desc limit 5;'
+  -c 'select id, "visitorId", "arrivedAt" from "Entry" order by "arrivedAt" desc limit 5;'
 ```
 
 For Neon, keep the real `DATABASE_URL` and `DIRECT_URL` in local or deployment

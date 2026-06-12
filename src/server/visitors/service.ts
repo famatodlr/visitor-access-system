@@ -1,11 +1,13 @@
-import { Prisma, type Visitor } from "@prisma/client";
+import { generateQrToken } from "./qr-token.ts";
+import {
+  createVisitorWithInitialEntry,
+  isUniqueConstraintError,
+  type SafeVisitor,
+  type VisitorWithQrTokenInput,
+} from "./repository.ts";
+import type { VisitorRegistrationInput } from "./validation.ts";
 
-import { prisma } from "@/lib/prisma";
-
-import { generateQrToken } from "./qr-token";
-import type { VisitorRegistrationInput } from "./validation";
-
-export type SafeVisitor = Omit<Visitor, "photoDataUrl">;
+export type { SafeVisitor } from "./repository.ts";
 
 export type RegisterVisitorResult =
   | {
@@ -17,47 +19,25 @@ export type RegisterVisitorResult =
       reason: "duplicate-dni" | "qr-token-collision";
     };
 
-function isUniqueConstraintError(error: unknown, field: "dni" | "qrToken"): boolean {
-  if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") {
-    return false;
-  }
-
-  const target = error.meta?.target;
-
-  if (Array.isArray(target)) {
-    return target.includes(field);
-  }
-
-  return target === field;
-}
-
-async function createVisitor(input: VisitorRegistrationInput): Promise<SafeVisitor> {
-  const visitor = await prisma.visitor.create({
-    data: {
-      ...input,
-      qrToken: generateQrToken(),
-    },
-    select: {
-      id: true,
-      name: true,
-      dni: true,
-      company: true,
-      sector: true,
-      qrToken: true,
-      createdAt: true,
-    },
-  });
-
-  return visitor;
+export interface RegisterVisitorDependencies {
+  createVisitorWithInitialEntry?: (input: VisitorWithQrTokenInput) => Promise<SafeVisitor>;
+  generateQrToken?: () => string;
 }
 
 export async function registerVisitor(
   input: VisitorRegistrationInput,
+  dependencies: RegisterVisitorDependencies = {},
 ): Promise<RegisterVisitorResult> {
+  const persistVisitor = dependencies.createVisitorWithInitialEntry ?? createVisitorWithInitialEntry;
+  const createQrToken = dependencies.generateQrToken ?? generateQrToken;
+
   try {
     return {
       ok: true,
-      visitor: await createVisitor(input),
+      visitor: await persistVisitor({
+        ...input,
+        qrToken: createQrToken(),
+      }),
     };
   } catch (error) {
     if (isUniqueConstraintError(error, "dni")) {
@@ -75,7 +55,10 @@ export async function registerVisitor(
   try {
     return {
       ok: true,
-      visitor: await createVisitor(input),
+      visitor: await persistVisitor({
+        ...input,
+        qrToken: createQrToken(),
+      }),
     };
   } catch (error) {
     if (isUniqueConstraintError(error, "dni")) {

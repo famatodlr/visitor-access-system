@@ -6,6 +6,12 @@ services:
     env_file:
       - path: .env
         required: false
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/geno_challenge?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@db:5432/geno_challenge?schema=public
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: geno_challenge
     ports:
       - "3000:3000"
     depends_on:
@@ -15,9 +21,9 @@ services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-plant_access}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-plant_access_password}
-      POSTGRES_DB: ${POSTGRES_DB:-plant_access_control}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: geno_challenge
     ports:
       - "5432:5432"
     volumes:
@@ -26,7 +32,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-plant_access} -d ${POSTGRES_DB:-plant_access_control}",
+          "pg_isready -U postgres -d geno_challenge",
         ]
       interval: 5s
       timeout: 5s

@@ -90,6 +90,94 @@ curl -i -b /tmp/plant-auth-cookie.txt -c /tmp/plant-auth-cookie.txt \
 curl -i -b /tmp/plant-auth-cookie.txt http://localhost:3000/api/auth/session
 ```
 
+## Visitor Registration API
+
+Visitor registration is available to authenticated guards through:
+
+```http
+POST /api/visitors
+```
+
+Request body:
+
+```json
+{
+  "name": "Ada Lovelace",
+  "dni": "12 345 678",
+  "company": "Analytical Engines SA",
+  "sector": "Operations",
+  "photoDataUrl": "data:image/png;base64,REPLACE_WITH_IMAGE_DATA"
+}
+```
+
+Required fields:
+
+- `name`
+- `dni`
+- `company`
+- `sector`
+- `photoDataUrl`
+
+All string fields are trimmed by the server. DNI is normalized before it is
+stored, and the QR token is generated server-side. `photoDataUrl` is stored
+directly in PostgreSQL for the challenge MVP; object storage and QR image
+generation are intentionally out of scope.
+
+With the application running, verify the endpoint with curl:
+
+```bash
+curl -i -c /tmp/plant-auth-cookie.txt -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"pin":"1234"}'
+
+curl -i -b /tmp/plant-auth-cookie.txt -X POST http://localhost:3000/api/visitors \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Ada Lovelace",
+    "dni": "12 345 678",
+    "company": "Analytical Engines SA",
+    "sector": "Operations",
+    "photoDataUrl": "data:image/png;base64,REPLACE_WITH_IMAGE_DATA"
+  }'
+
+curl -i -b /tmp/plant-auth-cookie.txt -X POST http://localhost:3000/api/visitors \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Ada Lovelace",
+    "dni": "12345678",
+    "company": "Analytical Engines SA",
+    "sector": "Operations",
+    "photoDataUrl": "data:image/png;base64,REPLACE_WITH_IMAGE_DATA"
+  }'
+
+curl -i -b /tmp/plant-auth-cookie.txt -X POST http://localhost:3000/api/visitors \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Missing Sector",
+    "dni": "99 999 999",
+    "company": "Example Company",
+    "photoDataUrl": "data:image/png;base64,REPLACE_WITH_IMAGE_DATA"
+  }'
+
+curl -i -X POST http://localhost:3000/api/visitors \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Unauthenticated Visitor",
+    "dni": "88 888 888",
+    "company": "Example Company",
+    "sector": "Operations",
+    "photoDataUrl": "data:image/png;base64,REPLACE_WITH_IMAGE_DATA"
+  }'
+```
+
+Expected results:
+
+- Authenticated create returns `201` with `id`, `name`, `dni`, `company`,
+  `sector`, `qrToken` and `createdAt`.
+- Reusing the same normalized DNI returns `409`.
+- Missing required fields return `400`.
+- Requests without a valid guard session return `401`.
+
 ## Docker
 
 Run the application and PostgreSQL locally:
@@ -146,6 +234,11 @@ to the configured Neon database.
 
 Do not create a migration unless `prisma/schema.prisma` changed.
 
+The visitor registration backend has been designed to work with the same
+`DATABASE_URL` and `DIRECT_URL` setup used for Docker PostgreSQL and Neon
+PostgreSQL. Use placeholders in documentation and logs; never print real Neon
+credentials.
+
 ## Verification
 
 Run the project checks:
@@ -154,6 +247,7 @@ Run the project checks:
 npm run lint
 npx tsc --noEmit
 npm run build
+docker compose build app
 ```
 
 Verify the database schema in Docker PostgreSQL:
@@ -168,3 +262,16 @@ Verify the Docker app responds:
 ```bash
 curl http://localhost:3000
 ```
+
+After creating a visitor, confirm persistence in the configured database without
+printing secrets. For Docker PostgreSQL:
+
+```bash
+docker compose exec db psql -U plant_access -d plant_access_control \
+  -c 'select id, name, dni, company, sector, "qrToken", "createdAt" from "Visitor" order by "createdAt" desc limit 5;'
+```
+
+For Neon, keep the real `DATABASE_URL` and `DIRECT_URL` in local or deployment
+environment variables, start the application with those values, create a visitor
+through the authenticated API flow above, and confirm the row through Prisma
+Studio or the Neon SQL console without exposing credentials.

@@ -66,6 +66,10 @@ docker compose down
 
 ## Prisma
 
+Application code should import the shared Prisma Client from
+`src/lib/prisma.ts`. The helper reuses a single client during development hot
+reloads and creates a normal client in production.
+
 Start only PostgreSQL for local Prisma commands:
 
 ```bash
@@ -78,18 +82,18 @@ the host to `localhost`:
 
 ```bash
 DATABASE_URL="postgresql://plant_access:plant_access_password@localhost:5432/plant_access_control?schema=public" \
-  npx prisma migrate dev --name add_visitors_entries
+  npm run prisma:migrate -- --name add_visitors_entries
 ```
 
-Validate the schema, generate the Prisma client and inspect migration status:
+Validate the schema, generate the Prisma client and open Prisma Studio:
 
 ```bash
 npm run prisma:validate
 npm run prisma:generate
-
-DATABASE_URL="postgresql://plant_access:plant_access_password@localhost:5432/plant_access_control?schema=public" \
-  npx prisma migrate status
+npm run prisma:studio
 ```
+
+Do not create a migration unless `prisma/schema.prisma` changed.
 
 ## Verification
 

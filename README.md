@@ -226,6 +226,32 @@ Expected results:
 - Missing required fields return `400`.
 - Requests without a valid guard session return `401`.
 
+## Visitor Registration UI
+
+The protected workspace includes the first visitor registration screen at:
+
+```text
+/workspace/visitors/new
+```
+
+Verify the browser flow locally against Docker PostgreSQL:
+
+1. Start PostgreSQL with `docker compose up -d db`.
+2. Start the app with `npm run dev`.
+3. Open `http://localhost:3000`.
+4. Log in with the configured `GUARD_PIN`.
+5. From `/workspace`, click `Register visitor`.
+6. Complete name, DNI, company and sector.
+7. Capture a photo with the camera or upload an image file.
+8. Submit the form and confirm the success state shows the registered visitor
+   information.
+9. Use `Register another visitor` to clear the form, or `Return to workspace`
+   to go back to the guard workspace.
+
+The UI submits the existing `POST /api/visitors` payload. Visitor photographs
+are sent as `photoDataUrl` base64 data URLs and stored by the backend in
+PostgreSQL for the challenge MVP.
+
 ## Docker
 
 Run the application and PostgreSQL locally:

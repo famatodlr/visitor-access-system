@@ -47,9 +47,19 @@ Variables introduced by the scaffold:
 - `POSTGRES_DB`: local PostgreSQL database name.
 - `DATABASE_URL`: PostgreSQL connection string used by Prisma. The example
   uses the Docker Compose service host `db`.
+- `DIRECT_URL`: direct PostgreSQL connection string used by Prisma migrations
+  and schema operations. The local example matches `DATABASE_URL`.
 - `GUARD_PIN`: PIN entered by the guard to authenticate.
 - `SESSION_SECRET`: long random secret used to sign and verify the guard
   session cookie.
+
+For Neon, use the two connection strings from the Neon project dashboard:
+
+- `DATABASE_URL`: Neon pooled connection string with connection pooling on.
+- `DIRECT_URL`: Neon direct connection string with connection pooling off.
+
+Keep real Neon values only in local or deployment environment variables. Never
+commit `.env` or any real database credentials.
 
 ## Authentication
 
@@ -106,12 +116,13 @@ Start only PostgreSQL for local Prisma commands:
 docker compose up -d db
 ```
 
-The `.env.example` `DATABASE_URL` uses `db` because it is read from inside
-Docker Compose containers. When running Prisma from the host machine, override
-the host to `localhost`:
+The `.env.example` `DATABASE_URL` and `DIRECT_URL` use `db` because they are
+read from inside Docker Compose containers. When running Prisma from the host
+machine, override the host to `localhost`:
 
 ```bash
 DATABASE_URL="postgresql://plant_access:plant_access_password@localhost:5432/plant_access_control?schema=public" \
+DIRECT_URL="postgresql://plant_access:plant_access_password@localhost:5432/plant_access_control?schema=public" \
   npm run prisma:migrate -- --name add_visitors_entries
 ```
 
@@ -123,6 +134,16 @@ npm run prisma:generate
 npm run prisma:studio
 ```
 
+To verify migrations against Neon, first configure local `.env` with the real
+Neon pooled `DATABASE_URL` and direct `DIRECT_URL`, then run:
+
+```bash
+npx prisma migrate deploy
+```
+
+Only run this command when you intentionally want to apply committed migrations
+to the configured Neon database.
+
 Do not create a migration unless `prisma/schema.prisma` changed.
 
 ## Verification
@@ -131,6 +152,7 @@ Run the project checks:
 
 ```bash
 npm run lint
+npx tsc --noEmit
 npm run build
 ```
 

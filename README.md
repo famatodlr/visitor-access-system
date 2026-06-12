@@ -10,6 +10,7 @@ for the application.
 - React
 - TypeScript
 - Tailwind CSS
+- Prisma
 - Docker
 - PostgreSQL
 
@@ -44,7 +45,8 @@ Variables introduced by the scaffold:
 - `POSTGRES_USER`: local PostgreSQL user.
 - `POSTGRES_PASSWORD`: local PostgreSQL password.
 - `POSTGRES_DB`: local PostgreSQL database name.
-- `DATABASE_URL`: PostgreSQL connection string for later Prisma setup.
+- `DATABASE_URL`: PostgreSQL connection string used by Prisma. The example
+  uses the Docker Compose service host `db`.
 - `GUARD_PIN`: guard PIN for the later authentication flow.
 - `SESSION_SECRET`: secret for the later session cookie flow.
 
@@ -62,6 +64,33 @@ Stop the containers:
 docker compose down
 ```
 
+## Prisma
+
+Start only PostgreSQL for local Prisma commands:
+
+```bash
+docker compose up -d db
+```
+
+The `.env.example` `DATABASE_URL` uses `db` because it is read from inside
+Docker Compose containers. When running Prisma from the host machine, override
+the host to `localhost`:
+
+```bash
+DATABASE_URL="postgresql://plant_access:plant_access_password@localhost:5432/plant_access_control?schema=public" \
+  npx prisma migrate dev --name add_visitors_entries
+```
+
+Validate the schema, generate the Prisma client and inspect migration status:
+
+```bash
+npm run prisma:validate
+npm run prisma:generate
+
+DATABASE_URL="postgresql://plant_access:plant_access_password@localhost:5432/plant_access_control?schema=public" \
+  npx prisma migrate status
+```
+
 ## Verification
 
 Run the project checks:
@@ -69,6 +98,13 @@ Run the project checks:
 ```bash
 npm run lint
 npm run build
+```
+
+Verify the database schema in Docker PostgreSQL:
+
+```bash
+docker compose exec db psql -U plant_access -d plant_access_control -c '\d "Visitor"'
+docker compose exec db psql -U plant_access -d plant_access_control -c '\d "Entry"'
 ```
 
 Verify the Docker app responds:

@@ -9,6 +9,7 @@ WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN DATABASE_URL="postgresql://plant_access:plant_access_password@db:5432/plant_access_control?schema=public" npm run prisma:generate
 RUN npm run build
 
 FROM node:22-alpine AS runner

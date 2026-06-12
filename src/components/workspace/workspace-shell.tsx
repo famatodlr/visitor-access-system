@@ -10,7 +10,7 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
   return (
     <main className="min-h-screen bg-[var(--background)] px-6 py-6 text-[var(--text)]">
       <div className="mx-auto flex min-h-[calc(100vh-48px)] max-w-[1200px] flex-col">
-        <header className="flex flex-col gap-4 border-b border-[var(--border)] pb-6 sm:flex-row sm:items-center sm:justify-between">
+        <header className="print-hidden flex flex-col gap-4 border-b border-[var(--border)] pb-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-[var(--primary)]">
               Guard workspace

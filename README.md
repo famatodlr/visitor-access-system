@@ -253,16 +253,21 @@ Verify the browser flow locally against the configured database:
 3. Open `http://localhost:3000`.
 4. Log in with the configured `GUARD_PIN`.
 5. From `/workspace`, click `Register visitor`.
-6. Complete name, DNI, company and sector.
-7. Capture a photo with the camera or upload an image file.
-8. Submit the form and confirm the success state shows the registered visitor
-   information.
-9. Use `Register another visitor` to clear the form, or `Return to workspace`
-   to go back to the guard workspace.
+6. Confirm the registration screen includes a `Return to workspace` action.
+7. Complete name, DNI, company and sector.
+8. Capture a photo with the camera or upload an image file.
+9. Submit the form and confirm the printable credential shows the registered
+   visitor information, photo and QR code.
+10. Open the browser print dialog and confirm the credential can be printed or
+    saved as a PDF.
+11. Use `Register another visitor` to clear the credential and return to a
+    fresh form, or `Return to workspace` to go back to the guard workspace.
 
 The UI submits the existing `POST /api/visitors` payload. Visitor photographs
 are sent as `photoDataUrl` base64 data URLs and stored by the backend in
-PostgreSQL for the challenge MVP.
+PostgreSQL for the challenge MVP. The credential preview retains the submitted
+photo in browser state after the API returns the created visitor payload, then
+renders a QR code from the server-generated `qrToken`.
 
 ## Docker
 

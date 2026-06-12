@@ -9,6 +9,8 @@ import {
   useState,
 } from "react";
 
+import { PrintableVisitorCredential } from "./printable-visitor-credential";
+
 type VisitorRegistrationField =
   | "name"
   | "dni"
@@ -33,6 +35,10 @@ interface RegisteredVisitor {
   qrToken: string;
   createdAt: string;
 }
+
+type RegisteredVisitorCredential = RegisteredVisitor & {
+  photoDataUrl: string;
+};
 
 interface VisitorRegistrationResponse {
   visitor?: RegisteredVisitor;
@@ -90,8 +96,8 @@ export function VisitorRegistrationForm() {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [isStartingCamera, setIsStartingCamera] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [registeredVisitor, setRegisteredVisitor] =
-    useState<RegisteredVisitor | null>(null);
+  const [registeredVisitorCredential, setRegisteredVisitorCredential] =
+    useState<RegisteredVisitorCredential | null>(null);
 
   function stopCamera() {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -220,7 +226,7 @@ export function VisitorRegistrationForm() {
     setFieldErrors({});
     setFormError(null);
     setPhotoError(null);
-    setRegisteredVisitor(null);
+    setRegisteredVisitorCredential(null);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -273,7 +279,10 @@ export function VisitorRegistrationForm() {
         return;
       }
 
-      setRegisteredVisitor(body.visitor);
+      setRegisteredVisitorCredential({
+        ...body.visitor,
+        photoDataUrl,
+      });
       stopCamera();
     } catch {
       setFormError("Could not register visitor. Please try again.");
@@ -282,65 +291,22 @@ export function VisitorRegistrationForm() {
     }
   }
 
-  if (registeredVisitor) {
+  if (registeredVisitorCredential) {
     return (
-      <section className="mt-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
-        <p className="text-sm font-semibold text-[var(--success)]">
-          Visitor registered
-        </p>
-        <h3 className="mt-2 text-xl font-bold">{registeredVisitor.name}</h3>
-        <dl className="mt-6 grid gap-4 text-base sm:grid-cols-2">
-          <div>
-            <dt className="text-sm font-semibold text-[var(--text-secondary)]">
-              DNI
-            </dt>
-            <dd className="mt-1 font-semibold">{registeredVisitor.dni}</dd>
-          </div>
-          <div>
-            <dt className="text-sm font-semibold text-[var(--text-secondary)]">
-              Company
-            </dt>
-            <dd className="mt-1 font-semibold">{registeredVisitor.company}</dd>
-          </div>
-          <div>
-            <dt className="text-sm font-semibold text-[var(--text-secondary)]">
-              Sector
-            </dt>
-            <dd className="mt-1 font-semibold">{registeredVisitor.sector}</dd>
-          </div>
-          <div>
-            <dt className="text-sm font-semibold text-[var(--text-secondary)]">
-              QR token
-            </dt>
-            <dd className="mt-1 break-all font-semibold">
-              {registeredVisitor.qrToken}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm font-semibold text-[var(--text-secondary)]">
-              Registered
-            </dt>
-            <dd className="mt-1 font-semibold">
-              {new Date(registeredVisitor.createdAt).toLocaleString()}
-            </dd>
-          </div>
-        </dl>
-        <div className="mt-6 flex flex-wrap gap-4">
-          <button
-            className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-blue-800"
-            onClick={resetForm}
-            type="button"
-          >
-            Register another visitor
-          </button>
+      <>
+        <PrintableVisitorCredential
+          onRegisterAnother={resetForm}
+          visitor={registeredVisitorCredential}
+        />
+        <div className="print-hidden mt-6">
           <Link
-            className="rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)]"
+            className="inline-flex rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)]"
             href="/workspace"
           >
             Return to workspace
           </Link>
         </div>
-      </section>
+      </>
     );
   }
 
@@ -459,13 +425,21 @@ export function VisitorRegistrationForm() {
             </p>
           ) : null}
 
-          <button
-            className="mt-6 w-full rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400"
-            disabled={isSubmitting}
-            type="submit"
-          >
-            {isSubmitting ? "Registering..." : "Register visitor"}
-          </button>
+          <div className="mt-6 flex flex-col gap-4 sm:flex-row">
+            <button
+              className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400 sm:flex-1"
+              disabled={isSubmitting}
+              type="submit"
+            >
+              {isSubmitting ? "Registering..." : "Register visitor"}
+            </button>
+            <Link
+              className="rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-center text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)] sm:flex-1"
+              href="/workspace"
+            >
+              Return to workspace
+            </Link>
+          </div>
         </section>
 
         <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">

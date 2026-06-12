@@ -47,8 +47,38 @@ Variables introduced by the scaffold:
 - `POSTGRES_DB`: local PostgreSQL database name.
 - `DATABASE_URL`: PostgreSQL connection string used by Prisma. The example
   uses the Docker Compose service host `db`.
-- `GUARD_PIN`: guard PIN for the later authentication flow.
-- `SESSION_SECRET`: secret for the later session cookie flow.
+- `GUARD_PIN`: PIN entered by the guard to authenticate.
+- `SESSION_SECRET`: long random secret used to sign and verify the guard
+  session cookie.
+
+## Authentication
+
+Guard authentication is intentionally simple. The guard submits a PIN, the
+server compares it with `GUARD_PIN`, and a successful login sets a signed
+HTTP-only session cookie. Sessions are verified with `SESSION_SECRET` and are
+not stored in the database.
+
+The session cookie uses `sameSite` protection, is marked secure in production,
+and expires after a fixed session window.
+
+With the development server running, verify the endpoints with curl:
+
+```bash
+curl -i -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"pin":"wrong"}'
+
+curl -i -c /tmp/plant-auth-cookie.txt -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"pin":"1234"}'
+
+curl -i -b /tmp/plant-auth-cookie.txt http://localhost:3000/api/auth/session
+
+curl -i -b /tmp/plant-auth-cookie.txt -c /tmp/plant-auth-cookie.txt \
+  -X POST http://localhost:3000/api/auth/logout
+
+curl -i -b /tmp/plant-auth-cookie.txt http://localhost:3000/api/auth/session
+```
 
 ## Docker
 

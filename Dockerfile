@@ -9,7 +9,9 @@ WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN DATABASE_URL="postgresql://postgres:postgres@db:5432/geno_challenge?schema=public" DIRECT_URL="postgresql://postgres:postgres@db:5432/geno_challenge?schema=public" npm run prisma:generate
+# Prisma Client generation needs syntactically valid PostgreSQL URLs for the
+# schema env vars, but it does not connect to the database during image build.
+RUN DATABASE_URL="postgresql://prisma:prisma@localhost:5432/prisma?schema=public" DIRECT_URL="postgresql://prisma:prisma@localhost:5432/prisma?schema=public" npm run prisma:generate
 RUN npm run build
 
 FROM node:22-alpine AS runner

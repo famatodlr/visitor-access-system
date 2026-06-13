@@ -52,6 +52,8 @@ Variables introduced by the scaffold:
 - `GUARD_PIN`: PIN entered by the guard to authenticate.
 - `SESSION_SECRET`: long random secret used to sign and verify the guard
   session cookie.
+- `SESSION_COOKIE_SECURE`: set to `false` for local HTTP Docker runs. Leave it
+  unset or use a secure value in HTTPS production deployments.
 
 For Neon, use the two connection strings from the Neon project dashboard:
 
@@ -71,6 +73,22 @@ not stored in the database.
 The session cookie uses `sameSite` protection, is marked secure in production,
 and expires after a fixed session window.
 
+The public login route is:
+
+```text
+/
+```
+
+The protected guard workspace route is:
+
+```text
+/workspace
+```
+
+Unauthenticated requests to `/workspace` redirect to `/`. After a successful
+login, the browser enters `/workspace`; logging out clears the session cookie
+and returns the user to the public login state.
+
 With the development server running, verify the endpoints with curl:
 
 ```bash
@@ -88,6 +106,32 @@ curl -i -b /tmp/plant-auth-cookie.txt -c /tmp/plant-auth-cookie.txt \
   -X POST http://localhost:3000/api/auth/logout
 
 curl -i -b /tmp/plant-auth-cookie.txt http://localhost:3000/api/auth/session
+```
+
+Verify the browser flow locally:
+
+1. Open `http://localhost:3000`.
+2. Enter the configured `GUARD_PIN` from `.env`.
+3. Confirm the browser lands on `http://localhost:3000/workspace`.
+4. Click `Logout`.
+5. Confirm visiting `http://localhost:3000/workspace` returns to the login
+   page.
+
+Verify the protected workspace route with curl:
+
+```bash
+curl -i http://localhost:3000/workspace
+
+curl -i -c /tmp/plant-auth-cookie.txt -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"pin":"1234"}'
+
+curl -i -b /tmp/plant-auth-cookie.txt http://localhost:3000/workspace
+
+curl -i -b /tmp/plant-auth-cookie.txt -c /tmp/plant-auth-cookie.txt \
+  -X POST http://localhost:3000/api/auth/logout
+
+curl -i -b /tmp/plant-auth-cookie.txt http://localhost:3000/workspace
 ```
 
 ## Visitor Registration API

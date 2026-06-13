@@ -2,8 +2,8 @@ export type VisitorRegistrationField = "name" | "dni" | "company" | "sector" | "
 export type VisitorDniSearchField = "dni";
 export type VisitorQrValidationField = "qrToken";
 
-const DNI_SEARCH_LENGTH_ERROR = "DNI must contain 7 or 8 digits.";
-const DNI_SEARCH_PATTERN = /^\d{7,8}$/;
+const DNI_LENGTH_ERROR = "DNI must contain 7 or 8 digits.";
+const DNI_PATTERN = /^\d{7,8}$/;
 const QR_TOKEN_MAX_LENGTH = 128;
 
 export interface VisitorRegistrationInput {
@@ -122,6 +122,13 @@ export function parseVisitorRegistrationInput(
   const sector = readRequiredString(payload, "sector", errors);
   const photoDataUrl = readRequiredString(payload, "photoDataUrl", errors);
 
+  if (dni && !DNI_PATTERN.test(dni)) {
+    errors.push({
+      field: "dni",
+      message: DNI_LENGTH_ERROR,
+    });
+  }
+
   if (errors.length > 0) {
     return {
       ok: false,
@@ -162,13 +169,13 @@ export function parseVisitorDniSearchInput(body: unknown): VisitorDniSearchValid
 
   const normalizedDni = dni.replace(/\s+/g, "");
 
-  if (!DNI_SEARCH_PATTERN.test(normalizedDni)) {
+  if (!DNI_PATTERN.test(normalizedDni)) {
     return {
       ok: false,
       errors: [
         {
           field: "dni",
-          message: DNI_SEARCH_LENGTH_ERROR,
+          message: DNI_LENGTH_ERROR,
         },
       ],
     };

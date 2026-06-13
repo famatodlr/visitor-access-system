@@ -11,7 +11,7 @@ import {
 test("parseVisitorRegistrationInput trims fields and normalizes dni", () => {
   const result = parseVisitorRegistrationInput({
     name: "  Ada Lovelace  ",
-    dni: "  12 345 abc  ",
+    dni: "  12 345 678  ",
     company: "  Analytical Engines SA  ",
     sector: "  Operations  ",
     photoDataUrl: "  data:image/png;base64,abc123  ",
@@ -25,11 +25,80 @@ test("parseVisitorRegistrationInput trims fields and normalizes dni", () => {
 
   assert.deepEqual(result.data, {
     name: "Ada Lovelace",
-    dni: "12345ABC",
+    dni: "12345678",
     company: "Analytical Engines SA",
     sector: "Operations",
     photoDataUrl: "data:image/png;base64,abc123",
   });
+});
+
+test("parseVisitorRegistrationInput accepts 7 digit dni values", () => {
+  const result = parseVisitorRegistrationInput({
+    name: "Ada Lovelace",
+    dni: "1234567",
+    company: "Analytical Engines SA",
+    sector: "Operations",
+    photoDataUrl: "data:image/png;base64,abc123",
+  });
+
+  assert.equal(result.ok, true);
+
+  if (!result.ok) {
+    throw new Error("Expected a valid registration payload.");
+  }
+
+  assert.equal(result.data.dni, "1234567");
+});
+
+test("parseVisitorRegistrationInput rejects alphabetic dni values", () => {
+  const result = parseVisitorRegistrationInput({
+    name: "Ada Lovelace",
+    dni: "12abc34",
+    company: "Analytical Engines SA",
+    sector: "Operations",
+    photoDataUrl: "data:image/png;base64,abc123",
+  });
+
+  assert.equal(result.ok, false);
+
+  if (result.ok) {
+    throw new Error("Expected validation errors.");
+  }
+
+  assert.deepEqual(result.errors, [
+    { field: "dni", message: "DNI must contain 7 or 8 digits." },
+  ]);
+});
+
+test("parseVisitorRegistrationInput rejects too-short and too-long dni values", () => {
+  const shortResult = parseVisitorRegistrationInput({
+    name: "Ada Lovelace",
+    dni: "123456",
+    company: "Analytical Engines SA",
+    sector: "Operations",
+    photoDataUrl: "data:image/png;base64,abc123",
+  });
+  const longResult = parseVisitorRegistrationInput({
+    name: "Ada Lovelace",
+    dni: "123456789",
+    company: "Analytical Engines SA",
+    sector: "Operations",
+    photoDataUrl: "data:image/png;base64,abc123",
+  });
+
+  assert.equal(shortResult.ok, false);
+  assert.equal(longResult.ok, false);
+
+  if (shortResult.ok || longResult.ok) {
+    throw new Error("Expected validation errors.");
+  }
+
+  assert.deepEqual(shortResult.errors, [
+    { field: "dni", message: "DNI must contain 7 or 8 digits." },
+  ]);
+  assert.deepEqual(longResult.errors, [
+    { field: "dni", message: "DNI must contain 7 or 8 digits." },
+  ]);
 });
 
 test("parseVisitorRegistrationInput rejects missing and empty required fields", () => {

@@ -102,12 +102,12 @@ Do not add a theme toggle.
 
 The palette should feel professional, operational and serious. It should support long periods of use by security personnel without feeling decorative or visually noisy.
 
-Large background areas should be near-black and neutral, not visibly blue. Blue is reserved for primary actions, focus states and small section accents.
+Large background areas should use neutral charcoal and slate tones, not pure black and not visibly blue. Blue is reserved for primary actions, focus states and small section accents, and should feel sober rather than flashy.
 
 Primary
 
---primary: #2563EB;
---primary-hover: #3B82F6;
+--primary: #1D4ED8;
+--primary-hover: #2563EB;
 
 Used for:
 
@@ -153,12 +153,12 @@ Used for:
 
 Neutral
 
---background: #09090B;
---surface: #111827;
---surface-elevated: #1A2230;
---border: #2A3445;
---text: #F8FAFC;
---text-secondary: #94A3B8;
+--background: #111113;
+--surface: #181A20;
+--surface-elevated: #20232A;
+--border: #2F333C;
+--text: #F4F4F5;
+--text-secondary: #A1A1AA;
 
 The application should primarily use dark neutral colors.
 
@@ -263,6 +263,10 @@ Never hide them inside menus.
 Do not show unavailable or coming-soon workflows in the main workspace.
 
 Keep workspace copy short and operational. Each card should use a short title, one concise helper line at most and a direct action button.
+
+Workflow cards may use a small functional icon or visual mark as an anchor between helper text and the action button.
+
+Icons are supportive only. They must not replace text labels, introduce decorative complexity or use loud colors.
 
 ⸻
 

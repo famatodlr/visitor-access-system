@@ -13,18 +13,17 @@ export default async function VisitorDetailPage({
     <section>
       <div className="print-hidden max-w-3xl">
         <p className="text-sm font-semibold text-[var(--primary)]">
-          Visitor detail
+          Detalle del visitante
         </p>
-        <h2 className="mt-2 text-3xl font-bold">Visitor Record</h2>
+        <h2 className="mt-2 text-3xl font-bold">Registro del visitante</h2>
         <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
-          Review the visitor identity, access credential and recorded entry
-          history.
+          Consulte la identidad, credencial e historial de ingresos.
         </p>
         <Link
           className="mt-6 inline-flex rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)]"
           href="/workspace/visitors/search"
         >
-          Back to search
+          Volver a la búsqueda
         </Link>
       </div>
 

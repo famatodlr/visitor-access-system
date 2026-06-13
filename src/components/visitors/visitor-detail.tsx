@@ -54,6 +54,19 @@ function parseVisitorDetailResponse(value: unknown): VisitorDetailResponse {
   };
 }
 
+function toSpanishVisitorDetailError(message?: string): string {
+  const messages: Record<string, string> = {
+    "Guard authentication is required.": "Debe iniciar sesión para continuar.",
+    "Could not load visitor details. Please try again.":
+      "No se pudo cargar el visitante. Intente nuevamente.",
+    "Visitor was not found.": "No se encontró el visitante.",
+  };
+
+  return message
+    ? (messages[message] ?? message)
+    : "No se pudo cargar el visitante. Intente nuevamente.";
+}
+
 function formatEntryDate(value: string): string {
   const date = new Date(value);
 
@@ -104,13 +117,13 @@ export function VisitorDetail({ visitorId }: VisitorDetailProps) {
         }
 
         if (!response.ok) {
-          setError(body.error ?? "Could not load visitor details. Please try again.");
+          setError(toSpanishVisitorDetailError(body.error));
           setVisitor(null);
           return;
         }
 
         if (!body.visitor) {
-          setError("Visitor details loaded without visitor data.");
+          setError("La consulta terminó sin datos del visitante.");
           setVisitor(null);
           return;
         }
@@ -118,7 +131,7 @@ export function VisitorDetail({ visitorId }: VisitorDetailProps) {
         setVisitor(body.visitor);
       } catch {
         if (isMounted) {
-          setError("Could not load visitor details. Please try again.");
+          setError("No se pudo cargar el visitante. Intente nuevamente.");
           setVisitor(null);
         }
       } finally {
@@ -139,7 +152,7 @@ export function VisitorDetail({ visitorId }: VisitorDetailProps) {
     return (
       <section className="mt-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
         <p className="text-base font-semibold text-[var(--text-secondary)]">
-          Loading visitor...
+          Cargando visitante...
         </p>
       </section>
     );
@@ -148,22 +161,22 @@ export function VisitorDetail({ visitorId }: VisitorDetailProps) {
   if (isNotFound) {
     return (
       <section className="mt-8 rounded-xl border border-[var(--warning)]/40 bg-[var(--warning)]/10 p-6">
-        <h3 className="text-xl font-bold">Visitor was not found</h3>
+        <h3 className="text-xl font-bold">No se encontró el visitante</h3>
         <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
-          Search again or register the visitor to create a new credential.
+          Busque nuevamente o registre al visitante para crear una credencial.
         </p>
         <div className="mt-6 flex flex-col gap-4 sm:flex-row">
           <Link
             className="rounded-lg bg-[var(--primary)] px-4 py-3 text-center text-base font-semibold text-white transition hover:bg-[var(--primary-hover)]"
             href="/workspace/visitors/search"
           >
-            Search again
+            Buscar nuevamente
           </Link>
           <Link
             className="rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-center text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)]"
             href="/workspace/visitors/new"
           >
-            Register visitor
+            Registrar visitante
           </Link>
         </div>
       </section>
@@ -174,16 +187,16 @@ export function VisitorDetail({ visitorId }: VisitorDetailProps) {
     return (
       <section className="mt-8 rounded-xl border border-[var(--error)]/40 bg-[var(--error)]/10 p-6">
         <h3 className="text-xl font-bold text-[var(--error)]">
-          Could not load visitor
+          No se pudo cargar el visitante
         </h3>
         <p className="mt-4 text-base leading-7 text-[var(--error)]">
-          {error ?? "Could not load visitor details. Please try again."}
+          {error ?? "No se pudo cargar el visitante. Intente nuevamente."}
         </p>
         <Link
           className="mt-6 inline-flex rounded-lg border border-[var(--error)]/40 bg-[var(--surface-elevated)] px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)]"
           href="/workspace/visitors/search"
         >
-          Return to search
+          Volver a la búsqueda
         </Link>
       </section>
     );
@@ -193,9 +206,9 @@ export function VisitorDetail({ visitorId }: VisitorDetailProps) {
     return (
       <PrintableVisitorCredential
         onRegisterAnother={() => setIsCredentialOpen(false)}
-        secondaryActionLabel="Back to visitor detail"
-        statusLabel="Printable credential"
-        title={`Credential for ${visitor.name}`}
+        secondaryActionLabel="Volver al detalle"
+        statusLabel="Credencial imprimible"
+        title={`Credencial de ${visitor.name}`}
         visitor={visitor}
       />
     );
@@ -207,7 +220,7 @@ export function VisitorDetail({ visitorId }: VisitorDetailProps) {
         <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            alt={`Visitor photo for ${visitor.name}`}
+            alt={`Foto del visitante ${visitor.name}`}
             className="aspect-[3/4] w-full object-cover"
             src={visitor.photoDataUrl}
           />
@@ -217,20 +230,20 @@ export function VisitorDetail({ visitorId }: VisitorDetailProps) {
           onClick={() => setIsCredentialOpen(true)}
           type="button"
         >
-          Open printable credential
+          Abrir credencial imprimible
         </button>
         <Link
           className="mt-4 inline-flex w-full justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)]"
           href="/workspace/visitors/search"
         >
-          Search another visitor
+          Buscar otro visitante
         </Link>
       </section>
 
       <div className="grid gap-6">
         <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
           <p className="text-sm font-semibold uppercase text-[var(--text-secondary)]">
-            Visitor
+            Visitante
           </p>
           <h3 className="mt-2 break-words text-3xl font-bold">
             {visitor.name}
@@ -245,7 +258,7 @@ export function VisitorDetail({ visitorId }: VisitorDetailProps) {
             </div>
             <div>
               <dt className="text-sm font-semibold text-[var(--text-secondary)]">
-                Company
+                Empresa
               </dt>
               <dd className="mt-1 font-bold">{visitor.company}</dd>
             </div>
@@ -259,7 +272,7 @@ export function VisitorDetail({ visitorId }: VisitorDetailProps) {
         </section>
 
         <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
-          <h3 className="text-xl font-bold">Entry History</h3>
+          <h3 className="text-xl font-bold">Historial de ingresos</h3>
 
           {visitor.entries.length > 0 ? (
             <div className="mt-6 grid gap-3">
@@ -279,7 +292,7 @@ export function VisitorDetail({ visitorId }: VisitorDetailProps) {
             </div>
           ) : (
             <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
-              No entries have been recorded for this visitor.
+              No hay ingresos registrados para este visitante.
             </p>
           )}
         </section>

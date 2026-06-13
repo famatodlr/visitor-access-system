@@ -19,6 +19,18 @@ This is a work tool.
 
 ⸻
 
+Language
+
+Visible UI copy should be Spanish by default.
+
+Use concise, natural Spanish for guards in Argentina/LatAm.
+
+Plant Access Control may remain as the product name.
+
+Technical acronyms such as DNI and QR may remain unchanged.
+
+⸻
+
 Design Principles
 
 Operational First
@@ -290,6 +302,12 @@ Fields:
 * Sector
 
 Photo capture should always remain visible while completing the form.
+
+Visitor photo capture is webcam-only.
+
+Do not include file upload controls or file picker fallbacks in the registration workflow.
+
+If camera access is unavailable or denied, explain in Spanish that camera access is required to capture the visitor photo.
 
 ⸻
 

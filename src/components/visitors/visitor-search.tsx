@@ -40,6 +40,22 @@ function parseVisitorSearchResponse(value: unknown): VisitorSearchResponse {
   };
 }
 
+function toSpanishSearchError(message?: string): string {
+  const messages: Record<string, string> = {
+    "Guard authentication is required.": "Debe iniciar sesión para continuar.",
+    "DNI is required.": "Ingrese el DNI.",
+    "DNI must contain 7 or 8 digits.":
+      "El DNI debe tener 7 u 8 dígitos.",
+    "Could not search visitors. Please try again.":
+      "No se pudo buscar el visitante. Intente nuevamente.",
+    "No visitor found for this DNI.": "No se encontró un visitante con ese DNI.",
+  };
+
+  return message
+    ? (messages[message] ?? message)
+    : "No se pudo buscar el visitante. Intente nuevamente.";
+}
+
 export function VisitorSearch() {
   const router = useRouter();
   const [dni, setDni] = useState("");
@@ -64,7 +80,7 @@ export function VisitorSearch() {
     const searchUrl = buildVisitorSearchUrl(dni);
 
     if (!searchUrl) {
-      setFieldError("DNI must contain 7 or 8 digits.");
+      setFieldError("El DNI debe tener 7 u 8 dígitos.");
       return;
     }
 
@@ -81,19 +97,21 @@ export function VisitorSearch() {
 
       if (!response.ok) {
         const dniError = body.fields?.find((field) => field.field === "dni");
-        setFieldError(dniError?.message ?? null);
-        setFormError(body.error ?? "Could not search visitors. Please try again.");
+        setFieldError(
+          dniError ? toSpanishSearchError(dniError.message) : null,
+        );
+        setFormError(toSpanishSearchError(body.error));
         return;
       }
 
       if (!body.visitor) {
-        setFormError("Visitor search completed without visitor details.");
+        setFormError("La búsqueda terminó sin datos del visitante.");
         return;
       }
 
       router.push(`/workspace/visitors/${body.visitor.id}`);
     } catch {
-      setFormError("Could not search visitors. Please try again.");
+      setFormError("No se pudo buscar el visitante. Intente nuevamente.");
     } finally {
       setIsSearching(false);
     }
@@ -102,7 +120,7 @@ export function VisitorSearch() {
   return (
     <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
       <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
-        <h3 className="text-xl font-bold">Search by DNI</h3>
+        <h3 className="text-xl font-bold">Buscar por DNI</h3>
         <form className="mt-6" onSubmit={handleSubmit}>
           <label
             className="block text-sm font-semibold text-[var(--text)]"
@@ -143,16 +161,16 @@ export function VisitorSearch() {
           {wasNotFound ? (
             <div className="mt-6 rounded-lg border border-[var(--warning)]/40 bg-[var(--warning)]/10 px-4 py-3">
               <p className="text-sm font-semibold text-[var(--text)]">
-                No visitor found for this DNI.
+                No se encontró un visitante con ese DNI.
               </p>
               <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">
-                Register the visitor to create their first access credential.
+                Registre al visitante para generar su primera credencial.
               </p>
               <Link
                 className="mt-4 inline-flex rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--primary-hover)]"
                 href="/workspace/visitors/new"
               >
-                Register visitor
+                Registrar visitante
               </Link>
             </div>
           ) : null}
@@ -163,23 +181,23 @@ export function VisitorSearch() {
               disabled={isSearching}
               type="submit"
             >
-              {isSearching ? "Searching..." : "Search visitor"}
+              {isSearching ? "Buscando..." : "Buscar visitante"}
             </button>
             <Link
               className="rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-center text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)] sm:flex-1"
               href="/workspace"
             >
-              Return to workspace
+              Volver al panel
             </Link>
           </div>
         </form>
       </section>
 
       <aside className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
-        <h3 className="text-xl font-bold">Lookup</h3>
+        <h3 className="text-xl font-bold">Consulta</h3>
         <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
-          Enter the numeric DNI exactly as presented. Search accepts 7 or 8
-          digits and ignores pasted letters or separators.
+          Ingrese el DNI numérico. La búsqueda acepta 7 u 8 dígitos e ignora
+          letras o separadores pegados.
         </p>
       </aside>
     </div>

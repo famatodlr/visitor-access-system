@@ -95,15 +95,15 @@ export function parseQrValidationResponse(value: unknown): QrValidationResponse 
 export function classifyQrScannerError(error: unknown): string {
   if (error instanceof DOMException) {
     if (error.name === "NotAllowedError" || error.name === "SecurityError") {
-      return "Camera access was denied. Allow camera permission and try again.";
+      return "El acceso a la cámara fue denegado. Habilite el permiso e intente nuevamente.";
     }
 
     if (error.name === "NotFoundError" || error.name === "OverconstrainedError") {
-      return "No camera was found on this device.";
+      return "No se encontró una cámara en este dispositivo.";
     }
   }
 
-  return "Camera access was denied or unavailable. Please try again.";
+  return "No se pudo acceder a la cámara. Intente nuevamente.";
 }
 
 export function formatQrEntryTimestamp(value: string): string {

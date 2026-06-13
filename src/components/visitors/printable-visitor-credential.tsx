@@ -39,9 +39,9 @@ function formatIssuedAt(value: string) {
 export function PrintableVisitorCredential({
   visitor,
   onRegisterAnother,
-  statusLabel = "Visitor registered",
-  title = `Credential ready for ${visitor.name}`,
-  secondaryActionLabel = "Register another visitor",
+  statusLabel = "Visitante registrado",
+  title = `Credencial lista para ${visitor.name}`,
+  secondaryActionLabel = "Registrar otro visitante",
 }: PrintableVisitorCredentialProps) {
   const issuedAt = formatIssuedAt(visitor.createdAt);
 
@@ -64,7 +64,7 @@ export function PrintableVisitorCredential({
             onClick={handlePrint}
             type="button"
           >
-            Print credential
+            Imprimir credencial
           </button>
           <button
             className="rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)]"
@@ -82,10 +82,12 @@ export function PrintableVisitorCredential({
             <p className="text-sm font-semibold uppercase">
               Plant Access Control
             </p>
-            <h3 className="mt-2 text-2xl font-bold">Visitor Credential</h3>
+            <h3 className="mt-2 text-2xl font-bold">
+              Credencial de visitante
+            </h3>
           </div>
           <div className="text-left sm:text-right">
-            <p className="text-sm font-semibold text-blue-100">Issued</p>
+            <p className="text-sm font-semibold text-blue-100">Emitida</p>
             <p className="mt-1 text-base font-bold">{issuedAt}</p>
           </div>
         </div>
@@ -94,7 +96,7 @@ export function PrintableVisitorCredential({
           <div className="overflow-hidden rounded-lg border border-slate-300 bg-slate-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              alt={`Visitor photo for ${visitor.name}`}
+              alt={`Foto del visitante ${visitor.name}`}
               className="aspect-[3/4] h-full w-full object-cover"
               src={visitor.photoDataUrl}
             />
@@ -102,7 +104,7 @@ export function PrintableVisitorCredential({
 
           <div className="flex flex-col justify-center">
             <p className="text-sm font-semibold uppercase text-slate-500">
-              Visitor
+              Visitante
             </p>
             <h4 className="mt-2 break-words text-3xl font-bold">
               {visitor.name}
@@ -117,7 +119,7 @@ export function PrintableVisitorCredential({
               </div>
               <div>
                 <dt className="text-sm font-semibold text-slate-500">
-                  Company
+                  Empresa
                 </dt>
                 <dd className="mt-1 font-bold">{visitor.company}</dd>
               </div>
@@ -135,11 +137,11 @@ export function PrintableVisitorCredential({
               className="h-[240px] w-[240px]"
               level="M"
               marginSize={4}
-              title={`QR credential for ${visitor.name}`}
+              title={`Credencial QR de ${visitor.name}`}
               value={visitor.qrToken}
             />
             <p className="mt-4 text-center text-sm font-semibold text-slate-500">
-              Scan credential
+              Escanear credencial
             </p>
           </div>
         </div>

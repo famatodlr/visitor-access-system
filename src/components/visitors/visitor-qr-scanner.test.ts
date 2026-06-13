@@ -65,15 +65,15 @@ test("parseQrValidationResponse keeps only string errors", () => {
 test("classifyQrScannerError returns useful camera messages", () => {
   assert.equal(
     classifyQrScannerError(new DOMException("Permission denied", "NotAllowedError")),
-    "Camera access was denied. Allow camera permission and try again.",
+    "El acceso a la cámara fue denegado. Habilite el permiso e intente nuevamente.",
   );
   assert.equal(
     classifyQrScannerError(new DOMException("No camera", "NotFoundError")),
-    "No camera was found on this device.",
+    "No se encontró una cámara en este dispositivo.",
   );
   assert.equal(
     classifyQrScannerError(new Error("Video stream unavailable")),
-    "Camera access was denied or unavailable. Please try again.",
+    "No se pudo acceder a la cámara. Intente nuevamente.",
   );
 });
 

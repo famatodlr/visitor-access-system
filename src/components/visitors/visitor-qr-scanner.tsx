@@ -48,6 +48,23 @@ async function readQrValidationResponse(response: Response): Promise<QrValidatio
   }
 }
 
+function toSpanishQrError(message?: string): string {
+  const messages: Record<string, string> = {
+    "Guard authentication is required.": "Debe iniciar sesión para continuar.",
+    "QR token is required.": "El token QR es obligatorio.",
+    "QR token must be 128 characters or fewer.":
+      "El token QR debe tener 128 caracteres o menos.",
+    "Could not validate QR credential. Please try again.":
+      "No se pudo validar la credencial QR. Intente nuevamente.",
+    "No visitor found for this QR credential.":
+      "No se encontró un visitante para esta credencial QR.",
+  };
+
+  return message
+    ? (messages[message] ?? message)
+    : "No se pudo validar la credencial QR. Intente nuevamente.";
+}
+
 export function VisitorQrScanner() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const scannerRef = useRef<QrScannerInstance | null>(null);
@@ -99,19 +116,19 @@ export function VisitorQrScanner() {
 
       if (response.status === 404) {
         setStatus("error");
-        setMessage(body.error ?? "No visitor found for this QR credential.");
+        setMessage(toSpanishQrError(body.error));
         return;
       }
 
       if (!response.ok) {
         setStatus("error");
-        setMessage(body.error ?? "Could not validate QR credential. Please try again.");
+        setMessage(toSpanishQrError(body.error));
         return;
       }
 
       if (!body.visitor || !body.entry) {
         setStatus("error");
-        setMessage("QR validation completed without visitor details.");
+        setMessage("La validación terminó sin datos del visitante.");
         return;
       }
 
@@ -119,7 +136,7 @@ export function VisitorQrScanner() {
       setStatus("success");
     } catch {
       setStatus("error");
-      setMessage("Could not validate QR credential. Please try again.");
+      setMessage("No se pudo validar la credencial QR. Intente nuevamente.");
     } finally {
       isSubmittingRef.current = false;
     }
@@ -130,7 +147,9 @@ export function VisitorQrScanner() {
 
     if (!video) {
       setStatus("error");
-      setMessage("Camera preview is not ready yet. Please try again.");
+      setMessage(
+        "La vista previa de la cámara todavía no está lista. Intente nuevamente.",
+      );
       return;
     }
 
@@ -147,7 +166,7 @@ export function VisitorQrScanner() {
 
       if (!hasCamera) {
         setStatus("error");
-        setMessage("No camera was found on this device.");
+        setMessage("No se encontró una cámara en este dispositivo.");
         return;
       }
 
@@ -159,7 +178,7 @@ export function VisitorQrScanner() {
 
             if (!qrToken) {
               setStatus("error");
-              setMessage("The scanned QR code did not include a valid token.");
+              setMessage("El código QR escaneado no contiene un token válido.");
               stopScanner();
               return;
             }
@@ -196,7 +215,7 @@ export function VisitorQrScanner() {
   return (
     <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
       <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
-        <h3 className="text-xl font-bold">Scanner</h3>
+        <h3 className="text-xl font-bold">Escáner</h3>
 
         <div className="relative mt-6 overflow-hidden rounded-lg border border-[var(--border)] bg-slate-950">
           <video
@@ -208,7 +227,7 @@ export function VisitorQrScanner() {
           {!isScanning && status !== "validating" ? (
             <div className="absolute inset-0 flex items-center justify-center bg-slate-950/80 px-6 text-center">
               <p className="text-sm font-semibold text-white">
-                Start scanning when the visitor credential is ready.
+                Inicie el escaneo cuando la credencial esté lista.
               </p>
             </div>
           ) : null}
@@ -217,29 +236,29 @@ export function VisitorQrScanner() {
         {status === "idle" ? (
           <div className="mt-6 rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3">
             <p className="text-sm font-semibold text-[var(--text)]">
-              Ready to scan
+              Listo para escanear
             </p>
             <p className="mt-1 text-sm leading-6 text-[var(--text-secondary)]">
-              The scanner will pause after the first QR code is detected.
+              El escáner se detendrá después de detectar el primer código QR.
             </p>
           </div>
         ) : null}
 
         {status === "starting" ? (
           <p className="mt-6 rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-sm font-semibold text-[var(--text-secondary)]">
-            Starting camera...
+            Iniciando cámara...
           </p>
         ) : null}
 
         {status === "scanning" ? (
           <p className="mt-6 rounded-lg border border-[var(--primary)]/50 bg-[var(--primary)]/10 px-4 py-3 text-sm font-semibold text-[var(--primary-hover)]">
-            Scanning QR credential...
+            Escaneando credencial QR...
           </p>
         ) : null}
 
         {status === "validating" ? (
           <p className="mt-6 rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-sm font-semibold text-[var(--text-secondary)]">
-            Validating credential...
+            Validando credencial...
           </p>
         ) : null}
 
@@ -254,12 +273,12 @@ export function VisitorQrScanner() {
         {status === "success" && confirmation?.visitor && confirmation.entry ? (
           <div className="mt-6 rounded-lg border border-[var(--success)]/40 bg-[var(--success)]/10 px-4 py-3">
             <p className="text-sm font-semibold text-[var(--success)]">
-              Entry registered
+              Ingreso registrado
             </p>
             <dl className="mt-4 grid gap-3 text-sm">
               <div>
                 <dt className="font-semibold text-[var(--text-secondary)]">
-                  Visitor
+                  Visitante
                 </dt>
                 <dd className="mt-1 text-base font-bold text-[var(--text)]">
                   {confirmation.visitor.fullName}
@@ -276,7 +295,7 @@ export function VisitorQrScanner() {
                 </div>
                 <div>
                   <dt className="font-semibold text-[var(--text-secondary)]">
-                    Company
+                    Empresa
                   </dt>
                   <dd className="mt-1 font-bold text-[var(--text)]">
                     {confirmation.visitor.company}
@@ -285,7 +304,7 @@ export function VisitorQrScanner() {
               </div>
               <div>
                 <dt className="font-semibold text-[var(--text-secondary)]">
-                  Entry time
+                  Hora de ingreso
                 </dt>
                 <dd className="mt-1 font-bold text-[var(--text)]">
                   {formatQrEntryTimestamp(confirmation.entry.arrivedAt)}
@@ -302,7 +321,7 @@ export function VisitorQrScanner() {
               onClick={resetScanner}
               type="button"
             >
-              Scan again
+              Escanear nuevamente
             </button>
           ) : (
             <button
@@ -311,23 +330,23 @@ export function VisitorQrScanner() {
               onClick={startScanner}
               type="button"
             >
-              {status === "starting" ? "Starting..." : "Start scanner"}
+              {status === "starting" ? "Iniciando..." : "Iniciar escáner"}
             </button>
           )}
           <Link
             className="rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-center text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)] sm:flex-1"
             href="/workspace"
           >
-            Return to workspace
+            Volver al panel
           </Link>
         </div>
       </section>
 
       <aside className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
-        <h3 className="text-xl font-bold">Repeat entry</h3>
+        <h3 className="text-xl font-bold">Nuevo ingreso</h3>
         <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
-          Scan the QR code printed on the visitor credential. A valid credential
-          creates a new access entry for the visitor.
+          Escanee el código QR impreso en la credencial. Una credencial válida
+          registra un nuevo ingreso para el visitante.
         </p>
       </aside>
     </div>

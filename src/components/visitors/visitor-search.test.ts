@@ -16,7 +16,7 @@ test("sanitizeVisitorSearchDni removes non-digits and keeps at most 8 digits", (
 });
 
 test("validateVisitorSearchDni returns an inline error for too-short input", () => {
-  assert.equal(validateVisitorSearchDni("123456"), "DNI must contain 7 or 8 digits.");
+  assert.equal(validateVisitorSearchDni("123456"), "El DNI debe tener 7 u 8 dígitos.");
 });
 
 test("buildVisitorSearchUrl returns null for invalid dni values", () => {

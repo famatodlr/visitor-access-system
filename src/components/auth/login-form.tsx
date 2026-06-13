@@ -27,6 +27,21 @@ function parseLoginResponse(value: unknown): LoginResponse {
   };
 }
 
+function toSpanishAuthError(message?: string): string {
+  const messages: Record<string, string> = {
+    "PIN is required.": "Ingrese el PIN.",
+    "Invalid PIN.": "PIN inválido.",
+    "Authentication is not configured.":
+      "La autenticación no está configurada.",
+    "Could not sign in. Please try again.":
+      "No se pudo iniciar sesión. Intente nuevamente.",
+  };
+
+  return message
+    ? (messages[message] ?? message)
+    : "No se pudo iniciar sesión. Intente nuevamente.";
+}
+
 export function LoginForm() {
   const router = useRouter();
   const [pin, setPin] = useState("");
@@ -49,14 +64,14 @@ export function LoginForm() {
       const body = parseLoginResponse(await response.json());
 
       if (!response.ok || !body.authenticated) {
-        setError(body.error ?? "Could not sign in. Please try again.");
+        setError(toSpanishAuthError(body.error));
         return;
       }
 
       router.push("/workspace");
       router.refresh();
     } catch {
-      setError("Could not sign in. Please try again.");
+      setError("No se pudo iniciar sesión. Intente nuevamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -69,7 +84,7 @@ export function LoginForm() {
           className="block text-sm font-semibold text-[var(--text)]"
           htmlFor="guard-pin"
         >
-          Guard PIN
+          PIN de guardia
         </label>
         <input
           autoComplete="current-password"
@@ -94,7 +109,7 @@ export function LoginForm() {
         disabled={isSubmitting}
         type="submit"
       >
-        {isSubmitting ? "Signing in..." : "Sign in"}
+        {isSubmitting ? "Ingresando..." : "Ingresar"}
       </button>
     </form>
   );

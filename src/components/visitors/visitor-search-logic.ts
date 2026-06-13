@@ -1,7 +1,8 @@
 const DNI_DIGIT_PATTERN = /^\d{7,8}$/;
 
-export const VISITOR_SEARCH_DNI_LENGTH_ERROR = "DNI must contain 7 or 8 digits.";
-export const VISITOR_SEARCH_DNI_REQUIRED_ERROR = "DNI is required.";
+export const VISITOR_SEARCH_DNI_LENGTH_ERROR =
+  "El DNI debe tener 7 u 8 dígitos.";
+export const VISITOR_SEARCH_DNI_REQUIRED_ERROR = "Ingrese el DNI.";
 
 export function sanitizeVisitorSearchDni(value: string): string {
   return value.replace(/\D/g, "").slice(0, 8);

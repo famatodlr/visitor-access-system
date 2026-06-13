@@ -1,14 +1,16 @@
 export interface WorkspaceAction {
   title: string;
   description: string;
-  status: "Coming next";
+  status: "Available" | "Coming next";
+  href?: string;
 }
 
 export const WORKSPACE_ACTIONS: WorkspaceAction[] = [
   {
     title: "Register visitor",
     description: "Create a visitor record, capture identification data, and prepare the access credential.",
-    status: "Coming next",
+    status: "Available",
+    href: "/workspace/visitors/new",
   },
   {
     title: "Search visitor by DNI",

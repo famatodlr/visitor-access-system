@@ -49,7 +49,7 @@ test("createVisitorWithInitialEntry creates one visitor and one linked entry in 
     return {
       id: "entry_1",
       visitorId: args.data.visitorId,
-      createdAt: new Date("2026-06-12T12:00:00.000Z"),
+      arrivedAt: new Date("2026-06-12T12:00:00.000Z"),
     };
   };
 

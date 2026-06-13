@@ -45,23 +45,30 @@ Variables introduced by the scaffold:
 - `POSTGRES_USER`: local PostgreSQL user for host-run PostgreSQL commands.
 - `POSTGRES_PASSWORD`: local PostgreSQL password for host-run PostgreSQL commands.
 - `POSTGRES_DB`: local PostgreSQL database name for host-run PostgreSQL commands.
-- `DATABASE_URL`: PostgreSQL connection string used by Prisma. The example
-  uses `localhost` for commands run from the host machine.
+- `DATABASE_URL`: PostgreSQL connection string used by Prisma and the running
+  application. Use the Neon pooled connection string for remote deployments or
+  the Docker-local connection string for local PostgreSQL.
 - `DIRECT_URL`: direct PostgreSQL connection string used by Prisma migrations
-  and schema operations. The local example matches `DATABASE_URL`.
+  and schema operations.
 - `GUARD_PIN`: PIN entered by the guard to authenticate.
 - `SESSION_SECRET`: long random secret used to sign and verify the guard
   session cookie.
 - `SESSION_COOKIE_SECURE`: set to `false` for local HTTP Docker runs. Leave it
   unset or use a secure value in HTTPS production deployments.
 
-For Neon, use the two connection strings from the Neon project dashboard:
+For Neon or another managed PostgreSQL provider, use the two connection strings
+from the provider dashboard:
 
 - `DATABASE_URL`: Neon pooled connection string with connection pooling on.
 - `DIRECT_URL`: Neon direct connection string with connection pooling off.
 
 Keep real Neon values only in local or deployment environment variables. Never
 commit `.env` or any real database credentials.
+
+For Docker local PostgreSQL, the hostname depends on where the command runs:
+
+- From the Docker app container, use `db`.
+- From host-run Prisma commands, use `localhost`.
 
 ## Authentication
 
@@ -171,6 +178,11 @@ Successful registration persists the visitor and the initial access entry in a
 single database transaction. If either write fails, the registration does not
 leave a partial visitor record behind.
 
+Entry arrival timestamps are stored as database `DateTime` instants in
+`Entry.arrivedAt`. Future UI and reporting surfaces should format those
+timestamps for display using the IANA timezone
+`America/Argentina/Buenos_Aires`; do not store formatted timestamp strings.
+
 With the application running, verify the endpoint with curl:
 
 ```bash
@@ -226,24 +238,64 @@ Expected results:
 - Missing required fields return `400`.
 - Requests without a valid guard session return `401`.
 
-## Docker
+## Visitor Registration UI
 
-Run the application and PostgreSQL locally:
+The protected workspace includes the first visitor registration screen at:
 
-```bash
-docker compose up --build
+```text
+/workspace/visitors/new
 ```
 
-Docker Compose is intentionally pinned to its local PostgreSQL service:
+Verify the browser flow locally against the configured database:
+
+1. Start the configured database if it is local.
+2. Start the app with `npm run dev`.
+3. Open `http://localhost:3000`.
+4. Log in with the configured `GUARD_PIN`.
+5. From `/workspace`, click `Register visitor`.
+6. Complete name, DNI, company and sector.
+7. Capture a photo with the camera or upload an image file.
+8. Submit the form and confirm the success state shows the registered visitor
+   information.
+9. Use `Register another visitor` to clear the form, or `Return to workspace`
+   to go back to the guard workspace.
+
+The UI submits the existing `POST /api/visitors` payload. Visitor photographs
+are sent as `photoDataUrl` base64 data URLs and stored by the backend in
+PostgreSQL for the challenge MVP.
+
+## Docker
+
+Run the Docker app with the database configured in `.env`:
+
+```bash
+docker compose up --build app
+```
+
+When `.env` contains Neon connection strings, the app container connects to
+Neon. Prisma migrations should already be applied to that Neon database before
+using the app.
+
+The Docker image build does not read `.env`; `.dockerignore` keeps local
+environment files out of the image build context. The runtime container receives
+database credentials from Docker Compose `env_file`/environment variables.
+
+To run the Docker app against the optional local PostgreSQL service, set
+`DATABASE_URL` and `DIRECT_URL` in `.env` to the Docker service hostname:
 
 ```text
 postgresql://postgres:postgres@db:5432/geno_challenge?schema=public
 ```
 
-This prevents local Docker runs from accidentally inheriting a Neon
-`DATABASE_URL` from `.env`. Use Neon only when you intentionally configure a
-deployment environment or run local commands with explicit Neon connection
-strings.
+Then run:
+
+```bash
+docker compose up --build
+```
+
+This starts both the app and the `db` service. The `db` service remains
+available for local PostgreSQL development, but the app is not hardcoded to use
+it.
 
 Stop the containers:
 
@@ -263,8 +315,14 @@ Start only PostgreSQL for local Prisma commands:
 docker compose up -d db
 ```
 
-The `.env.example` `DATABASE_URL` and `DIRECT_URL` use `localhost` because they
-are read by commands run from the host machine:
+When running Prisma commands from the host machine against Docker local
+PostgreSQL, use `localhost` in `.env`:
+
+```text
+postgresql://postgres:postgres@localhost:5432/geno_challenge?schema=public
+```
+
+Then run migrations or other Prisma commands:
 
 ```bash
 npm run prisma:migrate -- --name add_visitors_entries
@@ -290,10 +348,9 @@ to the configured Neon database.
 
 Do not create a migration unless `prisma/schema.prisma` changed.
 
-The visitor registration backend has been designed to work with the same
-`DATABASE_URL` and `DIRECT_URL` setup used for Docker PostgreSQL and Neon
-PostgreSQL. Use placeholders in documentation and logs; never print real Neon
-credentials.
+The visitor registration backend uses whichever PostgreSQL database is
+configured through `DATABASE_URL` and `DIRECT_URL`. Use placeholders in
+documentation and logs; never print real Neon credentials.
 
 ## Verification
 
@@ -315,9 +372,10 @@ docker compose exec db psql -U postgres -d geno_challenge -c '\d "Visitor"'
 docker compose exec db psql -U postgres -d geno_challenge -c '\d "Entry"'
 ```
 
-Verify the Docker app responds:
+Verify the Docker app responds with the database configured in `.env`:
 
 ```bash
+docker compose up --build app
 curl http://localhost:3000
 ```
 
@@ -329,7 +387,7 @@ docker compose exec db psql -U postgres -d geno_challenge \
   -c 'select id, name, dni, company, sector, "qrToken", "createdAt" from "Visitor" order by "createdAt" desc limit 5;'
 
 docker compose exec db psql -U postgres -d geno_challenge \
-  -c 'select id, "visitorId", "createdAt" from "Entry" order by "createdAt" desc limit 5;'
+  -c 'select id, "visitorId", "arrivedAt" from "Entry" order by "arrivedAt" desc limit 5;'
 ```
 
 For Neon, keep the real `DATABASE_URL` and `DIRECT_URL` in local or deployment

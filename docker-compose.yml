@@ -7,17 +7,9 @@ services:
       - path: .env
         required: false
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/geno_challenge?schema=public
-      DIRECT_URL: postgresql://postgres:postgres@db:5432/geno_challenge?schema=public
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: geno_challenge
       SESSION_COOKIE_SECURE: "false"
     ports:
       - "3000:3000"
-    depends_on:
-      db:
-        condition: service_healthy
 
   db:
     image: postgres:17-alpine

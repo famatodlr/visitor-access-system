@@ -23,7 +23,7 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
           >
             <a
               className="text-sm font-semibold text-[var(--text)]"
-              href="#register-visitor"
+              href="/workspace/visitors/new"
             >
               Register Visitor
             </a>

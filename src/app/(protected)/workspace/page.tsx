@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { WORKSPACE_ACTIONS } from "@/components/workspace/workspace-actions";
 
 export default function WorkspacePage() {
@@ -42,13 +44,22 @@ export default function WorkspacePage() {
             <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
               {action.description}
             </p>
-            <button
-              className="mt-6 rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--text-secondary)]"
-              disabled
-              type="button"
-            >
-              Available soon
-            </button>
+            {action.href ? (
+              <Link
+                className="mt-6 inline-flex rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
+                href={action.href}
+              >
+                Register visitor
+              </Link>
+            ) : (
+              <button
+                className="mt-6 rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--text-secondary)]"
+                disabled
+                type="button"
+              >
+                Available soon
+              </button>
+            )}
           </article>
         ))}
       </div>

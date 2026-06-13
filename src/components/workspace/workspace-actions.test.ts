@@ -4,7 +4,7 @@ import { describe, it } from "node:test";
 import { WORKSPACE_ACTIONS } from "./workspace-actions.ts";
 
 describe("WORKSPACE_ACTIONS", () => {
-  it("defines the protected workspace placeholders without feature routes", () => {
+  it("defines the protected workspace actions with visitor registration enabled", () => {
     assert.deepEqual(
       WORKSPACE_ACTIONS.map((action) => action.title),
       [
@@ -16,9 +16,11 @@ describe("WORKSPACE_ACTIONS", () => {
     );
 
     assert.equal(WORKSPACE_ACTIONS.length, 4);
-    assert.ok(
-      WORKSPACE_ACTIONS.every((action) => action.status === "Coming next"),
+    assert.deepEqual(
+      WORKSPACE_ACTIONS.map((action) => action.status),
+      ["Available", "Coming next", "Coming next", "Coming next"],
     );
-    assert.ok(WORKSPACE_ACTIONS.every((action) => !("href" in action)));
+    assert.equal(WORKSPACE_ACTIONS[0]?.href, "/workspace/visitors/new");
+    assert.ok(WORKSPACE_ACTIONS.slice(1).every((action) => !action.href));
   });
 });

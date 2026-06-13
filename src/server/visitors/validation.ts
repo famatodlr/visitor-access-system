@@ -1,6 +1,9 @@
 export type VisitorRegistrationField = "name" | "dni" | "company" | "sector" | "photoDataUrl";
 export type VisitorDniSearchField = "dni";
 
+const DNI_SEARCH_LENGTH_ERROR = "DNI must contain 7 or 8 digits.";
+const DNI_SEARCH_PATTERN = /^\d{7,8}$/;
+
 export interface VisitorRegistrationInput {
   name: string;
   dni: string;
@@ -136,10 +139,24 @@ export function parseVisitorDniSearchInput(body: unknown): VisitorDniSearchValid
     };
   }
 
+  const normalizedDni = dni.replace(/\s+/g, "");
+
+  if (!DNI_SEARCH_PATTERN.test(normalizedDni)) {
+    return {
+      ok: false,
+      errors: [
+        {
+          field: "dni",
+          message: DNI_SEARCH_LENGTH_ERROR,
+        },
+      ],
+    };
+  }
+
   return {
     ok: true,
     data: {
-      dni: normalizeDni(dni),
+      dni: normalizedDni,
     },
   };
 }

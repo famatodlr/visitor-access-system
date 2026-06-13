@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { VisitorDetail } from "@/components/visitors/visitor-detail";
 
 export default async function VisitorDetailPage({
@@ -18,6 +20,12 @@ export default async function VisitorDetailPage({
           Review the visitor identity, access credential and recorded entry
           history.
         </p>
+        <Link
+          className="mt-6 inline-flex rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)]"
+          href="/workspace/visitors/search"
+        >
+          Back to search
+        </Link>
       </div>
 
       <VisitorDetail visitorId={visitorId} />

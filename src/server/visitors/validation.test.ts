@@ -55,9 +55,9 @@ test("normalizeDni removes whitespace and uppercases letters", () => {
   assert.equal(normalizeDni("  ab 123 cd "), "AB123CD");
 });
 
-test("parseVisitorDniSearchInput normalizes dni like visitor registration", () => {
+test("parseVisitorDniSearchInput accepts 7 digit dni values", () => {
   const result = parseVisitorDniSearchInput({
-    dni: "  12 345 abc  ",
+    dni: "1234567",
   });
 
   assert.equal(result.ok, true);
@@ -67,7 +67,39 @@ test("parseVisitorDniSearchInput normalizes dni like visitor registration", () =
   }
 
   assert.deepEqual(result.data, {
-    dni: "12345ABC",
+    dni: "1234567",
+  });
+});
+
+test("parseVisitorDniSearchInput accepts 8 digit dni values", () => {
+  const result = parseVisitorDniSearchInput({
+    dni: "12345678",
+  });
+
+  assert.equal(result.ok, true);
+
+  if (!result.ok) {
+    throw new Error("Expected a valid DNI search payload.");
+  }
+
+  assert.deepEqual(result.data, {
+    dni: "12345678",
+  });
+});
+
+test("parseVisitorDniSearchInput removes whitespace before numeric validation", () => {
+  const result = parseVisitorDniSearchInput({
+    dni: "  12 345 678  ",
+  });
+
+  assert.equal(result.ok, true);
+
+  if (!result.ok) {
+    throw new Error("Expected a valid DNI search payload.");
+  }
+
+  assert.deepEqual(result.data, {
+    dni: "12345678",
   });
 });
 
@@ -84,5 +116,69 @@ test("parseVisitorDniSearchInput rejects missing and empty dni", () => {
 
   assert.deepEqual(result.errors, [
     { field: "dni", message: "DNI is required." },
+  ]);
+});
+
+test("parseVisitorDniSearchInput rejects alphabetic dni values", () => {
+  const result = parseVisitorDniSearchInput({
+    dni: "Hola",
+  });
+
+  assert.equal(result.ok, false);
+
+  if (result.ok) {
+    throw new Error("Expected DNI validation errors.");
+  }
+
+  assert.deepEqual(result.errors, [
+    { field: "dni", message: "DNI must contain 7 or 8 digits." },
+  ]);
+});
+
+test("parseVisitorDniSearchInput rejects mixed alphanumeric dni values", () => {
+  const result = parseVisitorDniSearchInput({
+    dni: "12abc34",
+  });
+
+  assert.equal(result.ok, false);
+
+  if (result.ok) {
+    throw new Error("Expected DNI validation errors.");
+  }
+
+  assert.deepEqual(result.errors, [
+    { field: "dni", message: "DNI must contain 7 or 8 digits." },
+  ]);
+});
+
+test("parseVisitorDniSearchInput rejects too-short dni values", () => {
+  const result = parseVisitorDniSearchInput({
+    dni: "123456",
+  });
+
+  assert.equal(result.ok, false);
+
+  if (result.ok) {
+    throw new Error("Expected DNI validation errors.");
+  }
+
+  assert.deepEqual(result.errors, [
+    { field: "dni", message: "DNI must contain 7 or 8 digits." },
+  ]);
+});
+
+test("parseVisitorDniSearchInput rejects too-long dni values", () => {
+  const result = parseVisitorDniSearchInput({
+    dni: "123456789",
+  });
+
+  assert.equal(result.ok, false);
+
+  if (result.ok) {
+    throw new Error("Expected DNI validation errors.");
+  }
+
+  assert.deepEqual(result.errors, [
+    { field: "dni", message: "DNI must contain 7 or 8 digits." },
   ]);
 });

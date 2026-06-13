@@ -277,9 +277,10 @@ Authenticated guards can search for an existing visitor by DNI through:
 GET /api/visitors/search?dni=12%20345%20678
 ```
 
-The server normalizes DNI input the same way visitor registration does:
-surrounding whitespace is trimmed, internal whitespace is removed and letters
-are uppercased before lookup.
+Visitor search accepts numeric DNI values with 7 or 8 digits. The server
+removes whitespace before lookup, then rejects non-digit values or values
+outside that length range. Visitor registration keeps its existing DNI
+normalization behavior.
 
 Successful search returns a small visitor summary:
 
@@ -333,7 +334,7 @@ credential. Do not display it as plain text.
 
 Expected results:
 
-- Missing DNI returns `400`.
+- Missing or invalid DNI returns `400`.
 - Requests without a valid guard session return `401`.
 - Missing visitors return `404`.
 - Unexpected database errors return `500` with a generic error message.
@@ -367,11 +368,12 @@ Verify the browser flow locally against the configured database:
 3. Open `http://localhost:3000`.
 4. Log in with the configured `GUARD_PIN`.
 5. From `/workspace`, click `Search visitor`.
-6. Search by DNI and confirm a matching visitor opens at
+6. Search by a 7 or 8 digit DNI and confirm a matching visitor opens at
    `/workspace/visitors/{visitorId}`.
 7. Confirm the detail view shows visitor information, photo and entry history.
-8. Open the printable credential and confirm the QR code is embedded there.
-9. Search for a missing DNI and confirm the not-found state links to visitor
+8. Confirm the detail view includes a `Back to search` action near the top.
+9. Open the printable credential and confirm the QR code is embedded there.
+10. Search for a missing DNI and confirm the not-found state links to visitor
    registration.
 
 The search flow does not validate QR codes or create repeat entries. Those

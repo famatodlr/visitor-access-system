@@ -4,6 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
+import {
+  buildVisitorSearchUrl,
+  sanitizeVisitorSearchDni,
+  validateVisitorSearchDni,
+} from "./visitor-search-logic";
+
 interface VisitorSearchResponse {
   visitor?: {
     id: string;
@@ -48,17 +54,24 @@ export function VisitorSearch() {
     setFormError(null);
     setWasNotFound(false);
 
-    if (dni.trim().length === 0) {
-      setFieldError("DNI is required.");
+    const dniValidationError = validateVisitorSearchDni(dni);
+
+    if (dniValidationError) {
+      setFieldError(dniValidationError);
+      return;
+    }
+
+    const searchUrl = buildVisitorSearchUrl(dni);
+
+    if (!searchUrl) {
+      setFieldError("DNI must contain 7 or 8 digits.");
       return;
     }
 
     setIsSearching(true);
 
     try {
-      const response = await fetch(
-        `/api/visitors/search?dni=${encodeURIComponent(dni)}`,
-      );
+      const response = await fetch(searchUrl);
       const body = parseVisitorSearchResponse(await response.json());
 
       if (response.status === 404) {
@@ -102,13 +115,16 @@ export function VisitorSearch() {
             className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
             disabled={isSearching}
             id="visitor-search-dni"
+            inputMode="numeric"
+            maxLength={8}
             name="dni"
             onChange={(event) => {
-              setDni(event.target.value);
+              setDni(sanitizeVisitorSearchDni(event.target.value));
               setFieldError(null);
               setFormError(null);
               setWasNotFound(false);
             }}
+            pattern="[0-9]*"
             type="text"
             value={dni}
           />
@@ -162,8 +178,8 @@ export function VisitorSearch() {
       <aside className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
         <h3 className="text-xl font-bold">Lookup</h3>
         <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
-          Enter the DNI exactly as presented. Spaces are normalized before the
-          search, matching visitor registration.
+          Enter the numeric DNI exactly as presented. Search accepts 7 or 8
+          digits and ignores pasted letters or separators.
         </p>
       </aside>
     </div>

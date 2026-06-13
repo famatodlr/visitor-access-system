@@ -30,7 +30,7 @@ export async function GET(request: Request) {
   if (!validation.ok) {
     return NextResponse.json(
       {
-        error: "DNI is required.",
+        error: validation.errors[0]?.message ?? "DNI is required.",
         fields: validation.errors,
       },
       { status: 400 },

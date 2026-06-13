@@ -24,7 +24,9 @@ export const WORKSPACE_ACTIONS: WorkspaceAction[] = [
   {
     title: "Validate QR / repeat entry",
     description: "Scan a saved credential and record a new facility entry.",
-    status: "Coming next",
+    status: "Available",
+    href: "/workspace/visitors/qr/validate",
+    ctaLabel: "Validate QR",
   },
   {
     title: "Visitor entries/history",

@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   normalizeDni,
+  parseVisitorQrValidationInput,
   parseVisitorDniSearchInput,
   parseVisitorRegistrationInput,
 } from "./validation.ts";
@@ -180,5 +181,67 @@ test("parseVisitorDniSearchInput rejects too-long dni values", () => {
 
   assert.deepEqual(result.errors, [
     { field: "dni", message: "DNI must contain 7 or 8 digits." },
+  ]);
+});
+
+test("parseVisitorQrValidationInput trims valid qr tokens", () => {
+  const result = parseVisitorQrValidationInput({
+    qrToken: "  qr-token-1  ",
+  });
+
+  assert.equal(result.ok, true);
+
+  if (!result.ok) {
+    throw new Error("Expected a valid QR validation payload.");
+  }
+
+  assert.deepEqual(result.data, {
+    qrToken: "qr-token-1",
+  });
+});
+
+test("parseVisitorQrValidationInput rejects non-object payloads", () => {
+  const result = parseVisitorQrValidationInput(null);
+
+  assert.equal(result.ok, false);
+
+  if (result.ok) {
+    throw new Error("Expected QR token validation errors.");
+  }
+
+  assert.deepEqual(result.errors, [
+    { field: "qrToken", message: "QR token is required." },
+  ]);
+});
+
+test("parseVisitorQrValidationInput rejects missing and empty qr tokens", () => {
+  const result = parseVisitorQrValidationInput({
+    qrToken: "   ",
+  });
+
+  assert.equal(result.ok, false);
+
+  if (result.ok) {
+    throw new Error("Expected QR token validation errors.");
+  }
+
+  assert.deepEqual(result.errors, [
+    { field: "qrToken", message: "QR token is required." },
+  ]);
+});
+
+test("parseVisitorQrValidationInput rejects qr tokens longer than 128 characters", () => {
+  const result = parseVisitorQrValidationInput({
+    qrToken: "a".repeat(129),
+  });
+
+  assert.equal(result.ok, false);
+
+  if (result.ok) {
+    throw new Error("Expected QR token validation errors.");
+  }
+
+  assert.deepEqual(result.errors, [
+    { field: "qrToken", message: "QR token must be 128 characters or fewer." },
   ]);
 });

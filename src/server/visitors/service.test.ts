@@ -6,9 +6,11 @@ import { Prisma } from "@prisma/client";
 import {
   getVisitorDetail,
   registerVisitor,
+  registerEntryFromQrToken,
   searchVisitorByDni,
   type SafeVisitor,
   type VisitorDetail,
+  type VisitorQrLookup,
   type VisitorSummary,
 } from "./service.ts";
 import type { VisitorRegistrationInput } from "./validation.ts";
@@ -207,4 +209,78 @@ test("getVisitorDetail returns null when visitor is missing", async () => {
   });
 
   assert.equal(result, null);
+});
+
+test("registerEntryFromQrToken creates an entry and returns confirmation data", async () => {
+  const visitor: VisitorQrLookup = {
+    id: "visitor_1",
+    name: "Ada Lovelace",
+    dni: "12345678",
+    company: "Analytical Engines SA",
+  };
+  const calls: string[] = [];
+  const arrivedAt = new Date("2026-06-13T15:30:00.000Z");
+
+  const result = await registerEntryFromQrToken("qr-token-1", {
+    findVisitorByQrToken: async (qrToken) => {
+      calls.push(`find:${qrToken}`);
+      return visitor;
+    },
+    createEntryForVisitor: async (visitorId) => {
+      calls.push(`entry:${visitorId}`);
+      return {
+        id: "entry_2",
+        arrivedAt,
+      };
+    },
+  });
+
+  assert.deepEqual(calls, ["find:qr-token-1", "entry:visitor_1"]);
+  assert.deepEqual(result, {
+    ok: true,
+    visitor: {
+      id: "visitor_1",
+      fullName: "Ada Lovelace",
+      dni: "12345678",
+      company: "Analytical Engines SA",
+    },
+    entry: {
+      id: "entry_2",
+      arrivedAt,
+    },
+  });
+});
+
+test("registerEntryFromQrToken returns unknown-qr-token when no visitor matches", async () => {
+  const entryCalls: string[] = [];
+
+  const result = await registerEntryFromQrToken("missing-token", {
+    findVisitorByQrToken: async () => null,
+    createEntryForVisitor: async (visitorId) => {
+      entryCalls.push(visitorId);
+      return {
+        id: "entry_unexpected",
+        arrivedAt: new Date("2026-06-13T15:30:00.000Z"),
+      };
+    },
+  });
+
+  assert.deepEqual(entryCalls, []);
+  assert.deepEqual(result, {
+    ok: false,
+    reason: "unknown-qr-token",
+  });
+});
+
+test("registerEntryFromQrToken propagates persistence errors", async () => {
+  const persistenceError = new Error("database unavailable");
+
+  await assert.rejects(
+    registerEntryFromQrToken("qr-token-1", {
+      findVisitorByQrToken: async () => {
+        throw persistenceError;
+      },
+    }),
+    persistenceError,
+  );
 });

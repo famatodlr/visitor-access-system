@@ -18,12 +18,14 @@ describe("WORKSPACE_ACTIONS", () => {
     assert.equal(WORKSPACE_ACTIONS.length, 4);
     assert.deepEqual(
       WORKSPACE_ACTIONS.map((action) => action.status),
-      ["Available", "Available", "Coming next", "Coming next"],
+      ["Available", "Available", "Available", "Coming next"],
     );
     assert.equal(WORKSPACE_ACTIONS[0]?.href, "/workspace/visitors/new");
     assert.equal(WORKSPACE_ACTIONS[0]?.ctaLabel, "Register visitor");
     assert.equal(WORKSPACE_ACTIONS[1]?.href, "/workspace/visitors/search");
     assert.equal(WORKSPACE_ACTIONS[1]?.ctaLabel, "Search visitor");
-    assert.ok(WORKSPACE_ACTIONS.slice(2).every((action) => !action.href));
+    assert.equal(WORKSPACE_ACTIONS[2]?.href, "/workspace/visitors/qr/validate");
+    assert.equal(WORKSPACE_ACTIONS[2]?.ctaLabel, "Validate QR");
+    assert.equal(WORKSPACE_ACTIONS[3]?.href, undefined);
   });
 });

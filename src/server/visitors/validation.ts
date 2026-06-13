@@ -1,8 +1,10 @@
 export type VisitorRegistrationField = "name" | "dni" | "company" | "sector" | "photoDataUrl";
 export type VisitorDniSearchField = "dni";
+export type VisitorQrValidationField = "qrToken";
 
 const DNI_SEARCH_LENGTH_ERROR = "DNI must contain 7 or 8 digits.";
 const DNI_SEARCH_PATTERN = /^\d{7,8}$/;
+const QR_TOKEN_MAX_LENGTH = 128;
 
 export interface VisitorRegistrationInput {
   name: string;
@@ -26,6 +28,15 @@ export interface VisitorDniSearchValidationError {
   message: string;
 }
 
+export interface VisitorQrValidationInput {
+  qrToken: string;
+}
+
+export interface VisitorQrValidationError {
+  field: VisitorQrValidationField;
+  message: string;
+}
+
 export type VisitorRegistrationValidationResult =
   | {
       ok: true;
@@ -44,6 +55,16 @@ export type VisitorDniSearchValidationResult =
   | {
       ok: false;
       errors: VisitorDniSearchValidationError[];
+    };
+
+export type VisitorQrValidationResult =
+  | {
+      ok: true;
+      data: VisitorQrValidationInput;
+    }
+  | {
+      ok: false;
+      errors: VisitorQrValidationError[];
     };
 
 const FIELD_LABELS: Record<VisitorRegistrationField, string> = {
@@ -157,6 +178,47 @@ export function parseVisitorDniSearchInput(body: unknown): VisitorDniSearchValid
     ok: true,
     data: {
       dni: normalizedDni,
+    },
+  };
+}
+
+export function parseVisitorQrValidationInput(body: unknown): VisitorQrValidationResult {
+  const payload =
+    body && typeof body === "object" && !Array.isArray(body)
+      ? (body as Record<string, unknown>)
+      : {};
+  const qrToken = payload.qrToken;
+
+  if (typeof qrToken !== "string" || qrToken.trim().length === 0) {
+    return {
+      ok: false,
+      errors: [
+        {
+          field: "qrToken",
+          message: "QR token is required.",
+        },
+      ],
+    };
+  }
+
+  const normalizedQrToken = qrToken.trim();
+
+  if (normalizedQrToken.length > QR_TOKEN_MAX_LENGTH) {
+    return {
+      ok: false,
+      errors: [
+        {
+          field: "qrToken",
+          message: "QR token must be 128 characters or fewer.",
+        },
+      ],
+    };
+  }
+
+  return {
+    ok: true,
+    data: {
+      qrToken: normalizedQrToken,
     },
   };
 }

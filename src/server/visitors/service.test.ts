@@ -3,7 +3,14 @@ import test from "node:test";
 
 import { Prisma } from "@prisma/client";
 
-import { registerVisitor, type SafeVisitor } from "./service.ts";
+import {
+  getVisitorDetail,
+  registerVisitor,
+  searchVisitorByDni,
+  type SafeVisitor,
+  type VisitorDetail,
+  type VisitorSummary,
+} from "./service.ts";
 import type { VisitorRegistrationInput } from "./validation.ts";
 
 const baseInput: VisitorRegistrationInput = {
@@ -132,4 +139,72 @@ test("registerVisitor returns qr-token-collision after a second QR token collisi
     ok: false,
     reason: "qr-token-collision",
   });
+});
+
+test("searchVisitorByDni returns visitor summary when found", async () => {
+  const summary: VisitorSummary = {
+    id: "visitor_1",
+    name: "Ada Lovelace",
+    dni: "12345ABC",
+    company: "Analytical Engines SA",
+    sector: "Operations",
+    createdAt: new Date("2026-06-12T12:00:00.000Z"),
+  };
+  const calls: string[] = [];
+
+  const result = await searchVisitorByDni("12345ABC", {
+    findVisitorSummaryByDni: async (dni) => {
+      calls.push(dni);
+      return summary;
+    },
+  });
+
+  assert.deepEqual(calls, ["12345ABC"]);
+  assert.deepEqual(result, summary);
+});
+
+test("searchVisitorByDni returns null when visitor is missing", async () => {
+  const result = await searchVisitorByDni("404", {
+    findVisitorSummaryByDni: async () => null,
+  });
+
+  assert.equal(result, null);
+});
+
+test("getVisitorDetail returns visitor detail when found", async () => {
+  const detail: VisitorDetail = {
+    id: "visitor_1",
+    name: "Ada Lovelace",
+    dni: "12345ABC",
+    company: "Analytical Engines SA",
+    sector: "Operations",
+    photoDataUrl: "data:image/png;base64,abc123",
+    qrToken: "qr-token-1",
+    createdAt: new Date("2026-06-12T12:00:00.000Z"),
+    entries: [
+      {
+        id: "entry_1",
+        arrivedAt: new Date("2026-06-12T12:00:00.000Z"),
+      },
+    ],
+  };
+  const calls: string[] = [];
+
+  const result = await getVisitorDetail("visitor_1", {
+    findVisitorDetailById: async (visitorId) => {
+      calls.push(visitorId);
+      return detail;
+    },
+  });
+
+  assert.deepEqual(calls, ["visitor_1"]);
+  assert.deepEqual(result, detail);
+});
+
+test("getVisitorDetail returns null when visitor is missing", async () => {
+  const result = await getVisitorDetail("missing", {
+    findVisitorDetailById: async () => null,
+  });
+
+  assert.equal(result, null);
 });

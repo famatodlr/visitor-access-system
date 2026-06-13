@@ -1,4 +1,8 @@
 export type VisitorRegistrationField = "name" | "dni" | "company" | "sector" | "photoDataUrl";
+export type VisitorDniSearchField = "dni";
+
+const DNI_SEARCH_LENGTH_ERROR = "DNI must contain 7 or 8 digits.";
+const DNI_SEARCH_PATTERN = /^\d{7,8}$/;
 
 export interface VisitorRegistrationInput {
   name: string;
@@ -13,6 +17,15 @@ export interface VisitorRegistrationValidationError {
   message: string;
 }
 
+export interface VisitorDniSearchInput {
+  dni: string;
+}
+
+export interface VisitorDniSearchValidationError {
+  field: VisitorDniSearchField;
+  message: string;
+}
+
 export type VisitorRegistrationValidationResult =
   | {
       ok: true;
@@ -21,6 +34,16 @@ export type VisitorRegistrationValidationResult =
   | {
       ok: false;
       errors: VisitorRegistrationValidationError[];
+    };
+
+export type VisitorDniSearchValidationResult =
+  | {
+      ok: true;
+      data: VisitorDniSearchInput;
+    }
+  | {
+      ok: false;
+      errors: VisitorDniSearchValidationError[];
     };
 
 const FIELD_LABELS: Record<VisitorRegistrationField, string> = {
@@ -93,6 +116,47 @@ export function parseVisitorRegistrationInput(
       company,
       sector,
       photoDataUrl,
+    },
+  };
+}
+
+export function parseVisitorDniSearchInput(body: unknown): VisitorDniSearchValidationResult {
+  const payload =
+    body && typeof body === "object" && !Array.isArray(body)
+      ? (body as Record<string, unknown>)
+      : {};
+  const dni = payload.dni;
+
+  if (typeof dni !== "string" || dni.trim().length === 0) {
+    return {
+      ok: false,
+      errors: [
+        {
+          field: "dni",
+          message: "DNI is required.",
+        },
+      ],
+    };
+  }
+
+  const normalizedDni = dni.replace(/\s+/g, "");
+
+  if (!DNI_SEARCH_PATTERN.test(normalizedDni)) {
+    return {
+      ok: false,
+      errors: [
+        {
+          field: "dni",
+          message: DNI_SEARCH_LENGTH_ERROR,
+        },
+      ],
+    };
+  }
+
+  return {
+    ok: true,
+    data: {
+      dni: normalizedDni,
     },
   };
 }

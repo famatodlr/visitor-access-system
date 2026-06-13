@@ -46,24 +46,46 @@ Variables introduced by the scaffold:
 - `POSTGRES_PASSWORD`: local PostgreSQL password for host-run PostgreSQL commands.
 - `POSTGRES_DB`: local PostgreSQL database name for host-run PostgreSQL commands.
 - `DATABASE_URL`: PostgreSQL connection string used by Prisma and the running
-  application. Use the Neon pooled connection string for remote deployments or
-  the Docker-local connection string for local PostgreSQL.
-- `DIRECT_URL`: direct PostgreSQL connection string used by Prisma migrations
-  and schema operations.
+  application. Use the Cloud SQL Unix socket connection string for Cloud Run
+  production or the Docker-local connection string for local PostgreSQL.
+- `DIRECT_URL`: direct PostgreSQL connection string used by Prisma CLI commands
+  because `prisma/schema.prisma` defines `directUrl`. It is not required by the
+  running Cloud Run app.
 - `GUARD_PIN`: PIN entered by the guard to authenticate.
 - `SESSION_SECRET`: long random secret used to sign and verify the guard
   session cookie.
 - `SESSION_COOKIE_SECURE`: set to `false` for local HTTP Docker runs. Leave it
   unset or use a secure value in HTTPS production deployments.
 
-For Neon or another managed PostgreSQL provider, use the two connection strings
-from the provider dashboard:
+Production on Google Cloud Run requires these environment variables:
 
-- `DATABASE_URL`: Neon pooled connection string with connection pooling on.
-- `DIRECT_URL`: Neon direct connection string with connection pooling off.
+- `DATABASE_URL`
+- `GUARD_PIN`
+- `SESSION_SECRET`
+- `SESSION_COOKIE_SECURE` only when overriding the default secure-cookie
+  behavior
+- `NEXT_PUBLIC_APP_NAME` only when overriding the default public app name
 
-Keep real Neon values only in local or deployment environment variables. Never
-commit `.env` or any real database credentials.
+Recommended Cloud SQL connection strategy:
+
+1. Attach the Cloud SQL instance to the Cloud Run service.
+2. Grant the Cloud Run service account the `roles/cloudsql.client` IAM role.
+3. Configure `DATABASE_URL` with the Cloud SQL Unix socket form:
+
+```text
+postgresql://DB_USER:DB_PASSWORD@localhost/DB_NAME?host=/cloudsql/PROJECT:REGION:INSTANCE&schema=public
+```
+
+Keep real Google Cloud project IDs, instance names, database passwords and
+service URLs only in deployment environment variables or secrets. Never commit
+`.env` or any real database credentials.
+
+Alternatives are possible but are not the default for this challenge:
+
+- Public IP with SSL can work, but it exposes a public database connectivity
+  surface.
+- Private IP with a VPC connector provides stricter network isolation, but adds
+  VPC setup that is not necessary for the simplest Cloud Run deployment.
 
 For Docker local PostgreSQL, the hostname depends on where the command runs:
 
@@ -387,13 +409,17 @@ Run the Docker app with the database configured in `.env`:
 docker compose up --build app
 ```
 
-When `.env` contains Neon connection strings, the app container connects to
-Neon. Prisma migrations should already be applied to that Neon database before
-using the app.
+When `.env` contains Cloud SQL connection strings and the runtime environment
+can reach Cloud SQL, the app container connects to Cloud SQL. For local Docker
+Compose development, keep using the Docker-local PostgreSQL values shown below.
+Prisma migrations should already be applied to the configured production
+database before using the deployed app.
 
 The Docker image build does not read `.env`; `.dockerignore` keeps local
 environment files out of the image build context. The runtime container receives
 database credentials from Docker Compose `env_file`/environment variables.
+The production runner image intentionally does not include Prisma CLI for
+startup migrations.
 
 To run the Docker app against the optional local PostgreSQL service, set
 `DATABASE_URL` and `DIRECT_URL` in `.env` to the Docker service hostname:
@@ -451,21 +477,33 @@ npm run prisma:generate
 npm run prisma:studio
 ```
 
-To verify migrations against Neon, first configure local `.env` with the real
-Neon pooled `DATABASE_URL` and direct `DIRECT_URL`, then run:
+Production migration policy:
+
+- Do not run migrations during Docker image build.
+- Do not run migrations automatically on container startup.
+- Run committed migrations manually or in CI/CD before deploying or releasing
+  the Cloud Run revision.
+- The production runner image intentionally does not include Prisma CLI for
+  startup migrations.
+
+To apply migrations to production, run this command from an environment that has
+network access to the Cloud SQL instance and production `DATABASE_URL` set:
 
 ```bash
 npx prisma migrate deploy
 ```
 
 Only run this command when you intentionally want to apply committed migrations
-to the configured Neon database.
+to the configured production database. Because `prisma/schema.prisma` defines
+`directUrl`, Prisma CLI commands also need `DIRECT_URL` set to a valid
+PostgreSQL connection string. The running Cloud Run app only needs
+`DATABASE_URL`.
 
 Do not create a migration unless `prisma/schema.prisma` changed.
 
 The visitor registration backend uses whichever PostgreSQL database is
-configured through `DATABASE_URL` and `DIRECT_URL`. Use placeholders in
-documentation and logs; never print real Neon credentials.
+configured through `DATABASE_URL`. Use placeholders in documentation and logs;
+never print real Google Cloud or database credentials.
 
 ## Verification
 
@@ -476,8 +514,10 @@ npm run lint
 npm test
 npx tsc --noEmit
 npx prisma validate
+DATABASE_URL="postgresql://prisma:prisma@localhost:5432/prisma?schema=public" DIRECT_URL="postgresql://prisma:prisma@localhost:5432/prisma?schema=public" npm run prisma:generate
 npm run build
 docker compose build app
+docker compose config
 ```
 
 Verify the database schema in Docker PostgreSQL:
@@ -505,7 +545,8 @@ docker compose exec db psql -U postgres -d geno_challenge \
   -c 'select id, "visitorId", "arrivedAt" from "Entry" order by "arrivedAt" desc limit 5;'
 ```
 
-For Neon, keep the real `DATABASE_URL` and `DIRECT_URL` in local or deployment
-environment variables, start the application with those values, create a visitor
-through the authenticated API flow above, and confirm the row through Prisma
-Studio or the Neon SQL console without exposing credentials.
+For Cloud SQL, keep the real `DATABASE_URL` and any Prisma CLI-only
+`DIRECT_URL` in local, CI/CD or deployment environment variables. Start the
+application with those values, create a visitor through the authenticated API
+flow above, and confirm the row through Cloud SQL Studio, `psql`, or Prisma
+Studio without exposing credentials.

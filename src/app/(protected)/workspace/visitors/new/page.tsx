@@ -3,7 +3,7 @@ import { VisitorRegistrationForm } from "@/components/visitors/visitor-registrat
 export default function NewVisitorPage() {
   return (
     <section>
-      <div className="max-w-3xl">
+      <div className="print-hidden max-w-3xl">
         <p className="text-sm font-semibold text-[var(--primary)]">
           Visitor registration
         </p>

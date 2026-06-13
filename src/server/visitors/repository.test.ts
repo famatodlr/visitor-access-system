@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  createEntryForVisitor,
   createVisitorWithInitialEntry,
   findVisitorDetailById,
+  findVisitorByQrToken,
   findVisitorSummaryByDni,
 } from "./repository.ts";
 
@@ -238,4 +240,83 @@ test("findVisitorDetailById returns null when no visitor matches", async () => {
   };
 
   assert.equal(await findVisitorDetailById("missing", client), null);
+});
+
+test("findVisitorByQrToken finds a visitor by qr token with confirmation fields only", async () => {
+  const client = {
+    visitor: {
+      findUnique: async (args: {
+        where: { qrToken: string };
+        select: Record<string, true>;
+      }) => {
+        assert.deepEqual(args.where, {
+          qrToken: "qr-token-1",
+        });
+        assert.equal(args.select.id, true);
+        assert.equal(args.select.name, true);
+        assert.equal(args.select.dni, true);
+        assert.equal(args.select.company, true);
+        assert.equal(args.select.sector, undefined);
+        assert.equal(args.select.photoDataUrl, undefined);
+        assert.equal(args.select.qrToken, undefined);
+        assert.equal(args.select.createdAt, undefined);
+
+        return {
+          id: "visitor_1",
+          name: "Ada Lovelace",
+          dni: "12345678",
+          company: "Analytical Engines SA",
+        };
+      },
+    },
+  };
+
+  const visitor = await findVisitorByQrToken("qr-token-1", client);
+
+  assert.deepEqual(visitor, {
+    id: "visitor_1",
+    name: "Ada Lovelace",
+    dni: "12345678",
+    company: "Analytical Engines SA",
+  });
+});
+
+test("findVisitorByQrToken returns null when no visitor matches", async () => {
+  const client = {
+    visitor: {
+      findUnique: async () => null,
+    },
+  };
+
+  assert.equal(await findVisitorByQrToken("missing-token", client), null);
+});
+
+test("createEntryForVisitor creates a linked entry and returns arrivedAt", async () => {
+  const arrivedAt = new Date("2026-06-13T15:30:00.000Z");
+  const client = {
+    entry: {
+      create: async (args: {
+        data: { visitorId: string };
+        select: Record<string, true>;
+      }) => {
+        assert.deepEqual(args.data, {
+          visitorId: "visitor_1",
+        });
+        assert.equal(args.select.id, true);
+        assert.equal(args.select.arrivedAt, true);
+
+        return {
+          id: "entry_2",
+          arrivedAt,
+        };
+      },
+    },
+  };
+
+  const entry = await createEntryForVisitor("visitor_1", client);
+
+  assert.deepEqual(entry, {
+    id: "entry_2",
+    arrivedAt,
+  });
 });

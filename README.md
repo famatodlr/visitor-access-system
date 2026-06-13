@@ -401,6 +401,101 @@ Verify the browser flow locally against the configured database:
 The search flow does not validate QR codes or create repeat entries. Those
 actions remain separate future workflows.
 
+## QR Validation API
+
+Authenticated guards can validate an existing visitor QR credential and record
+a repeat entry through:
+
+```http
+POST /api/visitors/qr/validate
+```
+
+Request body:
+
+```json
+{
+  "qrToken": "server-generated-token"
+}
+```
+
+The server trims `qrToken`, requires a non-empty string, rejects tokens longer
+than 128 characters and looks up the visitor by the stored `Visitor.qrToken`.
+QR tokens are not required to match a UUID pattern because the database value is
+the source of truth.
+
+Successful validation creates one new immutable `Entry` linked to the visitor
+and returns the visitor confirmation data plus the new entry timestamp:
+
+```json
+{
+  "visitor": {
+    "id": "visitor_id",
+    "fullName": "Ada Lovelace",
+    "dni": "12345678",
+    "company": "Analytical Engines SA"
+  },
+  "entry": {
+    "id": "entry_id",
+    "arrivedAt": "2026-06-13T15:30:00.000Z"
+  }
+}
+```
+
+Expected results:
+
+- Valid authenticated QR validation returns `201`.
+- Missing, empty or too-long `qrToken` returns `400`.
+- Requests without a valid guard session return `401`.
+- Unknown QR tokens return `404`.
+- Unexpected database errors return `500` with a generic error message.
+
+With the application running, verify the endpoint with curl:
+
+```bash
+curl -i -c /tmp/plant-auth-cookie.txt -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"pin":"1234"}'
+
+curl -i -b /tmp/plant-auth-cookie.txt -X POST http://localhost:3000/api/visitors/qr/validate \
+  -H "Content-Type: application/json" \
+  -d '{"qrToken":"REPLACE_WITH_EXISTING_VISITOR_QR_TOKEN"}'
+
+curl -i -b /tmp/plant-auth-cookie.txt -X POST http://localhost:3000/api/visitors/qr/validate \
+  -H "Content-Type: application/json" \
+  -d '{"qrToken":"unknown-token"}'
+
+curl -i -X POST http://localhost:3000/api/visitors/qr/validate \
+  -H "Content-Type: application/json" \
+  -d '{"qrToken":"REPLACE_WITH_EXISTING_VISITOR_QR_TOKEN"}'
+```
+
+## QR Validation UI
+
+The protected workspace includes QR validation for repeat entries at:
+
+```text
+/workspace/visitors/qr/validate
+```
+
+Verify the browser flow locally against the configured database:
+
+1. Start the configured database if it is local.
+2. Start the app with `npm run dev`.
+3. Open `http://localhost:3000`.
+4. Log in with the configured `GUARD_PIN`.
+5. From `/workspace`, click `Validate QR`.
+6. Present an existing printed credential or another screen showing the
+   visitor QR code.
+7. Confirm the scanner pauses after detecting the QR code.
+8. Confirm a valid QR code shows the visitor name, DNI, company and new entry
+   timestamp.
+9. Confirm an unknown QR code shows a friendly error and allows scanning again.
+10. Confirm denying camera permission shows a useful camera access message.
+
+Camera access requires a secure browser context. `http://localhost:3000` is
+treated as secure for local development by modern browsers; deployed
+environments should use HTTPS.
+
 ## Docker
 
 Run the Docker app with the database configured in `.env`:

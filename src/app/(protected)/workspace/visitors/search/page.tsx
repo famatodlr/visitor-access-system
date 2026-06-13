@@ -5,12 +5,11 @@ export default function VisitorSearchPage() {
     <section>
       <div className="max-w-3xl">
         <p className="text-sm font-semibold text-[var(--primary)]">
-          Visitor search
+          Búsqueda de visitante
         </p>
-        <h2 className="mt-2 text-3xl font-bold">Search Visitor</h2>
+        <h2 className="mt-2 text-3xl font-bold">Buscar visitante</h2>
         <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
-          Find a registered visitor by DNI and review their identification
-          details before handling access.
+          Busque por DNI para consultar datos e historial de ingresos.
         </p>
       </div>
 

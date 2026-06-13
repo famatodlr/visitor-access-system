@@ -48,12 +48,32 @@ const visitorDetailSelect = {
   },
 } satisfies Prisma.VisitorSelect;
 
+const visitorQrLookupSelect = {
+  id: true,
+  name: true,
+  dni: true,
+  company: true,
+} satisfies Prisma.VisitorSelect;
+
+const entryConfirmationSelect = {
+  id: true,
+  arrivedAt: true,
+} satisfies Prisma.EntrySelect;
+
 export type VisitorSummary = Prisma.VisitorGetPayload<{
   select: typeof visitorSummarySelect;
 }>;
 
 export type VisitorDetail = Prisma.VisitorGetPayload<{
   select: typeof visitorDetailSelect;
+}>;
+
+export type VisitorQrLookup = Prisma.VisitorGetPayload<{
+  select: typeof visitorQrLookupSelect;
+}>;
+
+export type EntryConfirmation = Prisma.EntryGetPayload<{
+  select: typeof entryConfirmationSelect;
 }>;
 
 export interface VisitorTransactionClient {
@@ -84,6 +104,24 @@ export interface VisitorDetailPersistenceClient {
       where: { id: string };
       select: typeof visitorDetailSelect;
     }): Promise<VisitorDetail | null>;
+  };
+}
+
+export interface VisitorQrLookupPersistenceClient {
+  visitor: {
+    findUnique(args: {
+      where: { qrToken: string };
+      select: typeof visitorQrLookupSelect;
+    }): Promise<VisitorQrLookup | null>;
+  };
+}
+
+export interface EntryPersistenceClient {
+  entry: {
+    create(args: {
+      data: { visitorId: string };
+      select: typeof entryConfirmationSelect;
+    }): Promise<EntryConfirmation>;
   };
 }
 
@@ -142,5 +180,29 @@ export async function findVisitorDetailById(
       id: visitorId,
     },
     select: visitorDetailSelect,
+  });
+}
+
+export async function findVisitorByQrToken(
+  qrToken: string,
+  client: VisitorQrLookupPersistenceClient = prisma as unknown as VisitorQrLookupPersistenceClient,
+): Promise<VisitorQrLookup | null> {
+  return client.visitor.findUnique({
+    where: {
+      qrToken,
+    },
+    select: visitorQrLookupSelect,
+  });
+}
+
+export async function createEntryForVisitor(
+  visitorId: string,
+  client: EntryPersistenceClient = prisma as unknown as EntryPersistenceClient,
+): Promise<EntryConfirmation> {
+  return client.entry.create({
+    data: {
+      visitorId,
+    },
+    select: entryConfirmationSelect,
   });
 }

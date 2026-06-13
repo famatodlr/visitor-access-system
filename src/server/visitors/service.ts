@@ -1,17 +1,27 @@
 import { generateQrToken } from "./qr-token.ts";
 import {
+  createEntryForVisitor,
   createVisitorWithInitialEntry,
   findVisitorDetailById,
+  findVisitorByQrToken,
   findVisitorSummaryByDni,
+  type EntryConfirmation,
   isUniqueConstraintError,
   type SafeVisitor,
   type VisitorDetail,
+  type VisitorQrLookup,
   type VisitorSummary,
   type VisitorWithQrTokenInput,
 } from "./repository.ts";
 import type { VisitorRegistrationInput } from "./validation.ts";
 
-export type { SafeVisitor, VisitorDetail, VisitorSummary } from "./repository.ts";
+export type {
+  EntryConfirmation,
+  SafeVisitor,
+  VisitorDetail,
+  VisitorQrLookup,
+  VisitorSummary,
+} from "./repository.ts";
 
 export type RegisterVisitorResult =
   | {
@@ -34,6 +44,27 @@ export interface SearchVisitorDependencies {
 
 export interface GetVisitorDetailDependencies {
   findVisitorDetailById?: (visitorId: string) => Promise<VisitorDetail | null>;
+}
+
+export type RegisterEntryFromQrTokenResult =
+  | {
+      ok: true;
+      visitor: {
+        id: string;
+        fullName: string;
+        dni: string;
+        company: string;
+      };
+      entry: EntryConfirmation;
+    }
+  | {
+      ok: false;
+      reason: "unknown-qr-token";
+    };
+
+export interface RegisterEntryFromQrTokenDependencies {
+  findVisitorByQrToken?: (qrToken: string) => Promise<VisitorQrLookup | null>;
+  createEntryForVisitor?: (visitorId: string) => Promise<EntryConfirmation>;
 }
 
 export async function registerVisitor(
@@ -107,4 +138,33 @@ export async function getVisitorDetail(
   const findVisitor = dependencies.findVisitorDetailById ?? findVisitorDetailById;
 
   return findVisitor(visitorId);
+}
+
+export async function registerEntryFromQrToken(
+  qrToken: string,
+  dependencies: RegisterEntryFromQrTokenDependencies = {},
+): Promise<RegisterEntryFromQrTokenResult> {
+  const findVisitor = dependencies.findVisitorByQrToken ?? findVisitorByQrToken;
+  const createEntry = dependencies.createEntryForVisitor ?? createEntryForVisitor;
+  const visitor = await findVisitor(qrToken);
+
+  if (!visitor) {
+    return {
+      ok: false,
+      reason: "unknown-qr-token",
+    };
+  }
+
+  const entry = await createEntry(visitor.id);
+
+  return {
+    ok: true,
+    visitor: {
+      id: visitor.id,
+      fullName: visitor.name,
+      dni: visitor.dni,
+      company: visitor.company,
+    },
+    entry,
+  };
 }

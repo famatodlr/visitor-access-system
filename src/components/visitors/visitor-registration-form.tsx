@@ -1,13 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  type ChangeEvent,
-  type FormEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 
 import { PrintableVisitorCredential } from "./printable-visitor-credential";
 
@@ -78,15 +72,46 @@ function fieldErrorsFromResponse(
   fields: VisitorRegistrationResponse["fields"],
 ): FieldErrors {
   return (fields ?? []).reduce<FieldErrors>((errors, fieldError) => {
-    errors[fieldError.field] = fieldError.message;
+    errors[fieldError.field] = toSpanishRegistrationFieldError(
+      fieldError.message,
+    );
     return errors;
   }, {});
+}
+
+function toSpanishRegistrationFieldError(message: string): string {
+  const messages: Record<string, string> = {
+    "Name is required.": "Ingrese el nombre.",
+    "DNI is required.": "Ingrese el DNI.",
+    "Company is required.": "Ingrese la empresa.",
+    "Sector is required.": "Ingrese el sector.",
+    "Photo data URL is required.": "Capture una foto con la cámara.",
+  };
+
+  return messages[message] ?? message;
+}
+
+function toSpanishRegistrationError(message?: string): string {
+  const messages: Record<string, string> = {
+    "Guard authentication is required.": "Debe iniciar sesión para continuar.",
+    "Visitor registration payload is invalid.":
+      "Revise los datos del visitante antes de registrar.",
+    "Could not register visitor. Please try again.":
+      "No se pudo registrar el visitante. Intente nuevamente.",
+    "A visitor with this DNI already exists.":
+      "Ya existe un visitante registrado con este DNI.",
+    "Could not generate a unique visitor credential. Please try again.":
+      "No se pudo generar la credencial. Intente nuevamente.",
+  };
+
+  return message
+    ? (messages[message] ?? message)
+    : "No se pudo registrar el visitante. Intente nuevamente.";
 }
 
 export function VisitorRegistrationForm() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [form, setForm] = useState(emptyForm);
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
@@ -126,7 +151,9 @@ export function VisitorRegistrationForm() {
     setPhotoError(null);
 
     if (!navigator.mediaDevices?.getUserMedia) {
-      setPhotoError("Camera capture is not available in this browser.");
+      setPhotoError(
+        "La captura con cámara no está disponible en este navegador.",
+      );
       return;
     }
 
@@ -147,7 +174,7 @@ export function VisitorRegistrationForm() {
       setIsCameraActive(true);
     } catch {
       setPhotoError(
-        "Camera access was denied or unavailable. Upload a photo instead.",
+        "No se pudo acceder a la cámara. Habilite el permiso para capturar la foto del visitante.",
       );
     } finally {
       setIsStartingCamera(false);
@@ -158,7 +185,9 @@ export function VisitorRegistrationForm() {
     const video = videoRef.current;
 
     if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
-      setPhotoError("Camera preview is not ready yet. Please try again.");
+      setPhotoError(
+        "La vista previa de la cámara todavía no está lista. Intente nuevamente.",
+      );
       return;
     }
 
@@ -169,7 +198,7 @@ export function VisitorRegistrationForm() {
     const context = canvas.getContext("2d");
 
     if (!context) {
-      setPhotoError("Could not capture the visitor photo. Please try again.");
+      setPhotoError("No se pudo capturar la foto. Intente nuevamente.");
       return;
     }
 
@@ -183,42 +212,6 @@ export function VisitorRegistrationForm() {
     stopCamera();
   }
 
-  function handlePhotoUpload(event: ChangeEvent<HTMLInputElement>) {
-    setPhotoError(null);
-
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      setPhotoError("Upload an image file for the visitor photo.");
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      if (typeof reader.result !== "string") {
-        setPhotoError("Could not read the selected photo.");
-        return;
-      }
-
-      setPhotoDataUrl(reader.result);
-      setFieldErrors((currentErrors) => ({
-        ...currentErrors,
-        photoDataUrl: undefined,
-      }));
-    };
-
-    reader.onerror = () => {
-      setPhotoError("Could not read the selected photo.");
-    };
-
-    reader.readAsDataURL(file);
-  }
-
   function resetForm() {
     stopCamera();
     setForm(emptyForm);
@@ -227,10 +220,6 @@ export function VisitorRegistrationForm() {
     setFormError(null);
     setPhotoError(null);
     setRegisteredVisitorCredential(null);
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -241,7 +230,7 @@ export function VisitorRegistrationForm() {
 
     if (!photoDataUrl) {
       setFieldErrors({
-        photoDataUrl: "Photo is required.",
+        photoDataUrl: "Capture una foto con la cámara.",
       });
       return;
     }
@@ -269,13 +258,13 @@ export function VisitorRegistrationForm() {
       if (!response.ok) {
         setFieldErrors(fieldErrorsFromResponse(body.fields));
         setFormError(
-          body.error ?? "Could not register visitor. Please try again.",
+          toSpanishRegistrationError(body.error),
         );
         return;
       }
 
       if (!body.visitor) {
-        setFormError("Visitor registration completed without visitor details.");
+        setFormError("El registro terminó sin datos del visitante.");
         return;
       }
 
@@ -285,7 +274,7 @@ export function VisitorRegistrationForm() {
       });
       stopCamera();
     } catch {
-      setFormError("Could not register visitor. Please try again.");
+      setFormError("No se pudo registrar el visitante. Intente nuevamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -300,10 +289,10 @@ export function VisitorRegistrationForm() {
         />
         <div className="print-hidden mt-6">
           <Link
-            className="inline-flex rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)]"
+            className="inline-flex rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)]"
             href="/workspace"
           >
-            Return to workspace
+            Volver al panel
           </Link>
         </div>
       </>
@@ -312,20 +301,20 @@ export function VisitorRegistrationForm() {
 
   return (
     <form className="mt-8" onSubmit={handleSubmit}>
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_440px]">
         <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
-          <h3 className="text-xl font-bold">Visitor Information</h3>
+          <h3 className="text-xl font-bold">Datos del visitante</h3>
           <div className="mt-6 grid gap-6">
             <div>
               <label
                 className="block text-sm font-semibold text-[var(--text)]"
                 htmlFor="visitor-name"
               >
-                Name
+                Nombre
               </label>
               <input
                 autoComplete="name"
-                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary-hover)] focus:ring-2 focus:ring-[var(--primary)]/30 disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={isSubmitting}
                 id="visitor-name"
                 name="name"
@@ -350,7 +339,7 @@ export function VisitorRegistrationForm() {
               </label>
               <input
                 autoComplete="off"
-                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary-hover)] focus:ring-2 focus:ring-[var(--primary)]/30 disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={isSubmitting}
                 id="visitor-dni"
                 name="dni"
@@ -371,11 +360,11 @@ export function VisitorRegistrationForm() {
                 className="block text-sm font-semibold text-[var(--text)]"
                 htmlFor="visitor-company"
               >
-                Company
+                Empresa
               </label>
               <input
                 autoComplete="organization"
-                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary-hover)] focus:ring-2 focus:ring-[var(--primary)]/30 disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={isSubmitting}
                 id="visitor-company"
                 name="company"
@@ -402,7 +391,7 @@ export function VisitorRegistrationForm() {
               </label>
               <input
                 autoComplete="off"
-                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary-hover)] focus:ring-2 focus:ring-[var(--primary)]/30 disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={isSubmitting}
                 id="visitor-sector"
                 name="sector"
@@ -420,36 +409,36 @@ export function VisitorRegistrationForm() {
           </div>
 
           {formError ? (
-            <p className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--error)]">
+            <p className="mt-6 rounded-lg border border-[var(--error)]/40 bg-[var(--error)]/10 px-4 py-3 text-sm font-medium text-[var(--error)]">
               {formError}
             </p>
           ) : null}
 
           <div className="mt-6 flex flex-col gap-4 sm:flex-row">
             <button
-              className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400 sm:flex-1"
+              className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:bg-[var(--surface-elevated)] disabled:text-[var(--text-secondary)] sm:flex-1"
               disabled={isSubmitting}
               type="submit"
             >
-              {isSubmitting ? "Registering..." : "Register visitor"}
+              {isSubmitting ? "Registrando..." : "Registrar visitante"}
             </button>
             <Link
-              className="rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-center text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)] sm:flex-1"
+              className="rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-center text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)] sm:flex-1"
               href="/workspace"
             >
-              Return to workspace
+              Volver al panel
             </Link>
           </div>
         </section>
 
         <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
-          <h3 className="text-xl font-bold">Photo Capture</h3>
+          <h3 className="text-xl font-bold">Captura de foto</h3>
 
-          <div className="mt-6 overflow-hidden rounded-lg border border-[var(--border)] bg-slate-100">
+          <div className="mt-6 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)]">
             {photoDataUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                alt="Captured visitor"
+                alt="Foto capturada del visitante"
                 className="aspect-[4/3] w-full object-cover"
                 src={photoDataUrl}
               />
@@ -475,65 +464,47 @@ export function VisitorRegistrationForm() {
             </p>
           ) : null}
 
-          <div className="mt-6 flex flex-wrap gap-4">
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row">
             {isCameraActive ? (
               <>
                 <button
-                  className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-blue-800"
+                  className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:bg-[var(--surface-elevated)] disabled:text-[var(--text-secondary)] sm:flex-1"
                   disabled={isSubmitting}
                   onClick={capturePhoto}
                   type="button"
                 >
-                  Capture photo
+                  Capturar foto
                 </button>
                 <button
-                  className="rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)]"
+                  className="rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-70 sm:flex-1"
                   disabled={isSubmitting}
                   onClick={stopCamera}
                   type="button"
                 >
-                  Stop camera
+                  Detener cámara
                 </button>
               </>
             ) : (
               <button
-                className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:bg-[var(--surface-elevated)] disabled:text-[var(--text-secondary)] sm:flex-1"
                 disabled={isSubmitting || isStartingCamera}
                 onClick={startCamera}
                 type="button"
               >
-                {isStartingCamera ? "Starting camera..." : "Start camera"}
+                {isStartingCamera ? "Iniciando cámara..." : "Iniciar cámara"}
               </button>
             )}
 
             {photoDataUrl ? (
               <button
-                className="rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)]"
+                className="rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-70 sm:flex-1"
                 disabled={isSubmitting}
                 onClick={() => setPhotoDataUrl(null)}
                 type="button"
               >
-                Retake photo
+                Tomar otra foto
               </button>
             ) : null}
-          </div>
-
-          <div className="mt-6">
-            <label
-              className="block text-sm font-semibold text-[var(--text)]"
-              htmlFor="visitor-photo-upload"
-            >
-              Upload photo
-            </label>
-            <input
-              accept="image/*"
-              className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base text-[var(--text)] file:mr-4 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[var(--text)]"
-              disabled={isSubmitting}
-              id="visitor-photo-upload"
-              onChange={handlePhotoUpload}
-              ref={fileInputRef}
-              type="file"
-            />
           </div>
         </section>
       </div>

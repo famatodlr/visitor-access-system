@@ -2,64 +2,121 @@ import Link from "next/link";
 
 import { WORKSPACE_ACTIONS } from "@/components/workspace/workspace-actions";
 
-export default function WorkspacePage() {
-  function getActionAnchor(index: number) {
-    if (index === 0) {
-      return "register-visitor";
-    }
+type WorkspaceIconName = "register" | "search" | "qr";
 
-    if (index === 1) {
-      return "search-visitor";
-    }
+function getWorkspaceIconName(href: string): WorkspaceIconName {
+  if (href.includes("/visitors/search")) {
+    return "search";
+  }
 
-    return undefined;
+  if (href.includes("/visitors/qr/validate")) {
+    return "qr";
+  }
+
+  return "register";
+}
+
+function WorkspaceActionIcon({ name }: { name: WorkspaceIconName }) {
+  if (name === "search") {
+    return (
+      <svg
+        aria-hidden="true"
+        className="h-8 w-8"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+        viewBox="0 0 24 24"
+      >
+        <path d="M6 4h8l4 4v12H6z" />
+        <path d="M14 4v4h4" />
+        <path d="M9 11h4" />
+        <path d="M9 15h2" />
+        <circle cx="16" cy="16" r="3" />
+        <path d="m18.5 18.5 2 2" />
+      </svg>
+    );
+  }
+
+  if (name === "qr") {
+    return (
+      <svg
+        aria-hidden="true"
+        className="h-8 w-8"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+        viewBox="0 0 24 24"
+      >
+        <path d="M5 9V5h4" />
+        <path d="M15 5h4v4" />
+        <path d="M19 15v4h-4" />
+        <path d="M9 19H5v-4" />
+        <path d="M8 12h8" />
+        <path d="M12 8v8" />
+        <path d="m14 17 2 2 4-5" />
+      </svg>
+    );
   }
 
   return (
+    <svg
+      aria-hidden="true"
+      className="h-8 w-8"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.8"
+      viewBox="0 0 24 24"
+    >
+      <rect height="14" rx="2" width="16" x="4" y="5" />
+      <circle cx="10" cy="12" r="2.5" />
+      <path d="M14 10h3" />
+      <path d="M14 14h2" />
+      <path d="M18 15v4" />
+      <path d="M16 17h4" />
+    </svg>
+  );
+}
+
+export default function WorkspacePage() {
+  return (
     <section>
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-3xl text-center">
         <p className="text-sm font-semibold text-[var(--primary)]">
-          Protected area
+          Panel operativo
         </p>
-        <h2 className="mt-2 text-3xl font-bold">Workspace</h2>
-        <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
-          Start from the primary guard workflows. Register new visitors or look
-          up existing visitor records before handling access.
+        <h2 className="mt-2 text-3xl font-bold sm:text-4xl">
+          Panel operativo
+        </h2>
+        <p className="mt-3 text-base leading-7 text-[var(--text-secondary)]">
+          Seleccione una tarea para registrar, consultar o validar accesos.
         </p>
       </div>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-2">
-        {WORKSPACE_ACTIONS.map((action, index) => (
+      <div className="mt-8 grid gap-5 md:grid-cols-3">
+        {WORKSPACE_ACTIONS.map((action) => (
           <article
-            className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6"
-            id={getActionAnchor(index)}
+            className="flex min-h-72 flex-col items-center rounded-xl border border-[var(--border)] bg-[var(--surface)] p-8 text-center"
             key={action.title}
           >
-            <div className="flex items-start justify-between gap-4">
-              <h3 className="text-xl font-bold">{action.title}</h3>
-              <span className="shrink-0 rounded-full border border-[var(--border)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
-                {action.status}
-              </span>
-            </div>
-            <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
+            <h3 className="text-2xl font-bold">{action.title}</h3>
+            <p className="mt-3 text-base leading-7 text-[var(--text-secondary)]">
               {action.description}
             </p>
-            {action.href ? (
-              <Link
-                className="mt-6 inline-flex rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
-                href={action.href}
-              >
-                {action.ctaLabel}
-              </Link>
-            ) : (
-              <button
-                className="mt-6 rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--text-secondary)]"
-                disabled
-                type="button"
-              >
-                Available soon
-              </button>
-            )}
+            <div className="mt-8 flex h-16 w-16 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--text-secondary)]">
+              <WorkspaceActionIcon name={getWorkspaceIconName(action.href)} />
+            </div>
+            <Link
+              className="mt-auto inline-flex w-full justify-center rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/40 focus:ring-offset-2 focus:ring-offset-[var(--surface)]"
+              href={action.href}
+            >
+              {action.ctaLabel}
+            </Link>
           </article>
         ))}
       </div>

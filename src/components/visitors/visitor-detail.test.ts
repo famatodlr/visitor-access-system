@@ -7,7 +7,7 @@ const detailPageSource = readFileSync(
   "utf8",
 );
 
-test("visitor detail page includes a top Back to search link", () => {
+test("visitor detail page includes a top back to search link", () => {
   assert.match(detailPageSource, /href="\/workspace\/visitors\/search"/);
-  assert.match(detailPageSource, /Back to search/);
+  assert.match(detailPageSource, /Volver a la búsqueda/);
 });

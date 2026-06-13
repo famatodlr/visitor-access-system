@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 
 import { LogoutButton } from "./logout-button";
 
@@ -11,29 +10,17 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
   return (
     <main className="min-h-screen bg-[var(--background)] px-6 py-6 text-[var(--text)]">
       <div className="mx-auto flex min-h-[calc(100vh-48px)] max-w-[1200px] flex-col">
-        <header className="print-hidden flex flex-col gap-4 border-b border-[var(--border)] pb-6 sm:flex-row sm:items-center sm:justify-between">
+        <header className="print-hidden flex flex-col gap-4 border-b border-[var(--border)] pb-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-[var(--primary)]">
-              Guard workspace
+              Puesto de guardia
             </p>
             <h1 className="mt-1 text-2xl font-bold">Plant Access Control</h1>
           </div>
           <nav
-            aria-label="Workspace actions"
-            className="flex flex-wrap items-center gap-4"
+            aria-label="Acciones del puesto"
+            className="flex items-center"
           >
-            <Link
-              className="text-sm font-semibold text-[var(--text)]"
-              href="/workspace/visitors/new"
-            >
-              Register Visitor
-            </Link>
-            <Link
-              className="text-sm font-semibold text-[var(--text-secondary)] transition hover:text-[var(--text)]"
-              href="/workspace/visitors/search"
-            >
-              Search Visitor
-            </Link>
             <LogoutButton />
           </nav>
         </header>

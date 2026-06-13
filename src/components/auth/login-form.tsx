@@ -27,6 +27,21 @@ function parseLoginResponse(value: unknown): LoginResponse {
   };
 }
 
+function toSpanishAuthError(message?: string): string {
+  const messages: Record<string, string> = {
+    "PIN is required.": "Ingrese el PIN.",
+    "Invalid PIN.": "PIN inválido.",
+    "Authentication is not configured.":
+      "La autenticación no está configurada.",
+    "Could not sign in. Please try again.":
+      "No se pudo iniciar sesión. Intente nuevamente.",
+  };
+
+  return message
+    ? (messages[message] ?? message)
+    : "No se pudo iniciar sesión. Intente nuevamente.";
+}
+
 export function LoginForm() {
   const router = useRouter();
   const [pin, setPin] = useState("");
@@ -49,14 +64,14 @@ export function LoginForm() {
       const body = parseLoginResponse(await response.json());
 
       if (!response.ok || !body.authenticated) {
-        setError(body.error ?? "Could not sign in. Please try again.");
+        setError(toSpanishAuthError(body.error));
         return;
       }
 
       router.push("/workspace");
       router.refresh();
     } catch {
-      setError("Could not sign in. Please try again.");
+      setError("No se pudo iniciar sesión. Intente nuevamente.");
     } finally {
       setIsSubmitting(false);
     }
@@ -69,11 +84,11 @@ export function LoginForm() {
           className="block text-sm font-semibold text-[var(--text)]"
           htmlFor="guard-pin"
         >
-          Guard PIN
+          PIN de guardia
         </label>
         <input
           autoComplete="current-password"
-          className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+          className="mt-2 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary-hover)] focus:ring-2 focus:ring-[var(--primary)]/30 disabled:cursor-not-allowed disabled:opacity-70"
           disabled={isSubmitting}
           id="guard-pin"
           inputMode="numeric"
@@ -84,17 +99,17 @@ export function LoginForm() {
           value={pin}
         />
         {error ? (
-          <p className="mt-2 text-sm font-medium text-[var(--error)]">
+          <p className="mt-2 rounded-lg border border-[var(--error)]/40 bg-[var(--error)]/10 px-3 py-2 text-sm font-medium text-[var(--error)]">
             {error}
           </p>
         ) : null}
       </div>
       <button
-        className="w-full rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+        className="w-full rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:bg-[var(--surface-elevated)] disabled:text-[var(--text-secondary)]"
         disabled={isSubmitting}
         type="submit"
       >
-        {isSubmitting ? "Signing in..." : "Sign in"}
+        {isSubmitting ? "Ingresando..." : "Ingresar"}
       </button>
     </form>
   );

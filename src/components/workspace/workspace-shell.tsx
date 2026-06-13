@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 
 import { LogoutButton } from "./logout-button";
 
@@ -21,18 +22,18 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
             aria-label="Workspace actions"
             className="flex flex-wrap items-center gap-4"
           >
-            <a
+            <Link
               className="text-sm font-semibold text-[var(--text)]"
               href="/workspace/visitors/new"
             >
               Register Visitor
-            </a>
-            <a
+            </Link>
+            <Link
               className="text-sm font-semibold text-[var(--text-secondary)] transition hover:text-[var(--text)]"
-              href="#search-visitor"
+              href="/workspace/visitors/search"
             >
               Search Visitor
-            </a>
+            </Link>
             <LogoutButton />
           </nav>
         </header>

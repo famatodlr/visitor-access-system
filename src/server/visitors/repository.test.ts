@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createVisitorWithInitialEntry } from "./repository.ts";
+import {
+  createVisitorWithInitialEntry,
+  findVisitorDetailById,
+  findVisitorSummaryByDni,
+} from "./repository.ts";
 
 test("createVisitorWithInitialEntry creates one visitor and one linked entry in a transaction", async () => {
   const operations: string[] = [];
@@ -99,4 +103,139 @@ test("createVisitorWithInitialEntry creates one visitor and one linked entry in 
     createdAt: new Date("2026-06-12T12:00:00.000Z"),
   });
   assert.equal("photoDataUrl" in visitor, false);
+});
+
+test("findVisitorSummaryByDni finds a visitor by normalized DNI without sensitive fields", async () => {
+  const client = {
+    visitor: {
+      findUnique: async (args: {
+        where: { dni: string };
+        select: Record<string, true>;
+      }) => {
+        assert.deepEqual(args.where, {
+          dni: "12345ABC",
+        });
+        assert.equal(args.select.id, true);
+        assert.equal(args.select.name, true);
+        assert.equal(args.select.dni, true);
+        assert.equal(args.select.company, true);
+        assert.equal(args.select.sector, true);
+        assert.equal(args.select.createdAt, true);
+        assert.equal(args.select.photoDataUrl, undefined);
+        assert.equal(args.select.qrToken, undefined);
+
+        return {
+          id: "visitor_1",
+          name: "Ada Lovelace",
+          dni: "12345ABC",
+          company: "Analytical Engines SA",
+          sector: "Operations",
+          createdAt: new Date("2026-06-12T12:00:00.000Z"),
+        };
+      },
+    },
+  };
+
+  const visitor = await findVisitorSummaryByDni("12345ABC", client);
+
+  assert.deepEqual(visitor, {
+    id: "visitor_1",
+    name: "Ada Lovelace",
+    dni: "12345ABC",
+    company: "Analytical Engines SA",
+    sector: "Operations",
+    createdAt: new Date("2026-06-12T12:00:00.000Z"),
+  });
+});
+
+test("findVisitorSummaryByDni returns null when no visitor matches", async () => {
+  const client = {
+    visitor: {
+      findUnique: async () => null,
+    },
+  };
+
+  assert.equal(await findVisitorSummaryByDni("404", client), null);
+});
+
+test("findVisitorDetailById includes photo, qr token and newest entries first", async () => {
+  const client = {
+    visitor: {
+      findUnique: async (args: {
+        where: { id: string };
+        select: {
+          entries: {
+            orderBy: { arrivedAt: "desc" };
+            select: Record<string, true>;
+          };
+          [key: string]: unknown;
+        };
+      }) => {
+        assert.deepEqual(args.where, {
+          id: "visitor_1",
+        });
+        assert.equal(args.select.photoDataUrl, true);
+        assert.equal(args.select.qrToken, true);
+        assert.deepEqual(args.select.entries.orderBy, {
+          arrivedAt: "desc",
+        });
+        assert.equal(args.select.entries.select.id, true);
+        assert.equal(args.select.entries.select.arrivedAt, true);
+
+        return {
+          id: "visitor_1",
+          name: "Ada Lovelace",
+          dni: "12345ABC",
+          company: "Analytical Engines SA",
+          sector: "Operations",
+          photoDataUrl: "data:image/png;base64,abc123",
+          qrToken: "qr-token-1",
+          createdAt: new Date("2026-06-12T12:00:00.000Z"),
+          entries: [
+            {
+              id: "entry_2",
+              arrivedAt: new Date("2026-06-13T12:00:00.000Z"),
+            },
+            {
+              id: "entry_1",
+              arrivedAt: new Date("2026-06-12T12:00:00.000Z"),
+            },
+          ],
+        };
+      },
+    },
+  };
+
+  const visitor = await findVisitorDetailById("visitor_1", client);
+
+  assert.deepEqual(visitor, {
+    id: "visitor_1",
+    name: "Ada Lovelace",
+    dni: "12345ABC",
+    company: "Analytical Engines SA",
+    sector: "Operations",
+    photoDataUrl: "data:image/png;base64,abc123",
+    qrToken: "qr-token-1",
+    createdAt: new Date("2026-06-12T12:00:00.000Z"),
+    entries: [
+      {
+        id: "entry_2",
+        arrivedAt: new Date("2026-06-13T12:00:00.000Z"),
+      },
+      {
+        id: "entry_1",
+        arrivedAt: new Date("2026-06-12T12:00:00.000Z"),
+      },
+    ],
+  });
+});
+
+test("findVisitorDetailById returns null when no visitor matches", async () => {
+  const client = {
+    visitor: {
+      findUnique: async () => null,
+    },
+  };
+
+  assert.equal(await findVisitorDetailById("missing", client), null);
 });

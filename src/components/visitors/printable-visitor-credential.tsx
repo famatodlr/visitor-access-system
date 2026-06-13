@@ -15,6 +15,9 @@ export interface PrintableVisitorCredentialData {
 interface PrintableVisitorCredentialProps {
   visitor: PrintableVisitorCredentialData;
   onRegisterAnother: () => void;
+  statusLabel?: string;
+  title?: string;
+  secondaryActionLabel?: string;
 }
 
 const issuedAtFormatter = new Intl.DateTimeFormat("es-AR", {
@@ -36,6 +39,9 @@ function formatIssuedAt(value: string) {
 export function PrintableVisitorCredential({
   visitor,
   onRegisterAnother,
+  statusLabel = "Visitor registered",
+  title = `Credential ready for ${visitor.name}`,
+  secondaryActionLabel = "Register another visitor",
 }: PrintableVisitorCredentialProps) {
   const issuedAt = formatIssuedAt(visitor.createdAt);
 
@@ -48,11 +54,9 @@ export function PrintableVisitorCredential({
       <div className="print-hidden mb-6 flex flex-col gap-4 rounded-xl border border-green-200 bg-green-50 p-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-[var(--success)]">
-            Visitor registered
+            {statusLabel}
           </p>
-          <h3 className="mt-2 text-xl font-bold">
-            Credential ready for {visitor.name}
-          </h3>
+          <h3 className="mt-2 text-xl font-bold">{title}</h3>
         </div>
         <div className="flex flex-wrap gap-4">
           <button
@@ -67,7 +71,7 @@ export function PrintableVisitorCredential({
             onClick={onRegisterAnother}
             type="button"
           >
-            Register another visitor
+            {secondaryActionLabel}
           </button>
         </div>
       </div>

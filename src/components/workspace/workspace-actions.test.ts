@@ -4,7 +4,7 @@ import { describe, it } from "node:test";
 import { WORKSPACE_ACTIONS } from "./workspace-actions.ts";
 
 describe("WORKSPACE_ACTIONS", () => {
-  it("defines the protected workspace actions with visitor registration enabled", () => {
+  it("defines the protected workspace actions with registration and search enabled", () => {
     assert.deepEqual(
       WORKSPACE_ACTIONS.map((action) => action.title),
       [
@@ -18,9 +18,12 @@ describe("WORKSPACE_ACTIONS", () => {
     assert.equal(WORKSPACE_ACTIONS.length, 4);
     assert.deepEqual(
       WORKSPACE_ACTIONS.map((action) => action.status),
-      ["Available", "Coming next", "Coming next", "Coming next"],
+      ["Available", "Available", "Coming next", "Coming next"],
     );
     assert.equal(WORKSPACE_ACTIONS[0]?.href, "/workspace/visitors/new");
-    assert.ok(WORKSPACE_ACTIONS.slice(1).every((action) => !action.href));
+    assert.equal(WORKSPACE_ACTIONS[0]?.ctaLabel, "Register visitor");
+    assert.equal(WORKSPACE_ACTIONS[1]?.href, "/workspace/visitors/search");
+    assert.equal(WORKSPACE_ACTIONS[1]?.ctaLabel, "Search visitor");
+    assert.ok(WORKSPACE_ACTIONS.slice(2).every((action) => !action.href));
   });
 });

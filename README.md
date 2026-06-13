@@ -269,6 +269,114 @@ PostgreSQL for the challenge MVP. The credential preview retains the submitted
 photo in browser state after the API returns the created visitor payload, then
 renders a QR code from the server-generated `qrToken`.
 
+## Visitor Search API
+
+Authenticated guards can search for an existing visitor by DNI through:
+
+```http
+GET /api/visitors/search?dni=12%20345%20678
+```
+
+The server normalizes DNI input the same way visitor registration does:
+surrounding whitespace is trimmed, internal whitespace is removed and letters
+are uppercased before lookup.
+
+Successful search returns a small visitor summary:
+
+```json
+{
+  "visitor": {
+    "id": "visitor_id",
+    "name": "Ada Lovelace",
+    "dni": "12345678",
+    "company": "Analytical Engines SA",
+    "sector": "Operations",
+    "createdAt": "2026-06-12T12:00:00.000Z"
+  }
+}
+```
+
+Search responses intentionally do not include `photoDataUrl` or `qrToken`.
+
+Visitor detail is available through:
+
+```http
+GET /api/visitors/{visitorId}
+```
+
+Successful detail responses include the fields needed for identification,
+entry history and credential rendering:
+
+```json
+{
+  "visitor": {
+    "id": "visitor_id",
+    "name": "Ada Lovelace",
+    "dni": "12345678",
+    "company": "Analytical Engines SA",
+    "sector": "Operations",
+    "photoDataUrl": "data:image/png;base64,REPLACE_WITH_IMAGE_DATA",
+    "qrToken": "server-generated-token",
+    "createdAt": "2026-06-12T12:00:00.000Z",
+    "entries": [
+      {
+        "id": "entry_id",
+        "arrivedAt": "2026-06-12T12:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+The detail response includes `qrToken` only so the UI can render the embedded QR
+credential. Do not display it as plain text.
+
+Expected results:
+
+- Missing DNI returns `400`.
+- Requests without a valid guard session return `401`.
+- Missing visitors return `404`.
+- Unexpected database errors return `500` with a generic error message.
+
+With the application running, verify the endpoints with curl:
+
+```bash
+curl -i -c /tmp/plant-auth-cookie.txt -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"pin":"1234"}'
+
+curl -i -b /tmp/plant-auth-cookie.txt \
+  "http://localhost:3000/api/visitors/search?dni=12%20345%20678"
+
+curl -i -b /tmp/plant-auth-cookie.txt \
+  "http://localhost:3000/api/visitors/REPLACE_WITH_VISITOR_ID"
+```
+
+## Visitor Search UI
+
+The protected workspace includes visitor lookup at:
+
+```text
+/workspace/visitors/search
+```
+
+Verify the browser flow locally against the configured database:
+
+1. Start the configured database if it is local.
+2. Start the app with `npm run dev`.
+3. Open `http://localhost:3000`.
+4. Log in with the configured `GUARD_PIN`.
+5. From `/workspace`, click `Search visitor`.
+6. Search by DNI and confirm a matching visitor opens at
+   `/workspace/visitors/{visitorId}`.
+7. Confirm the detail view shows visitor information, photo and entry history.
+8. Open the printable credential and confirm the QR code is embedded there.
+9. Search for a missing DNI and confirm the not-found state links to visitor
+   registration.
+
+The search flow does not validate QR codes or create repeat entries. Those
+actions remain separate future workflows.
+
 ## Docker
 
 Run the Docker app with the database configured in `.env`:

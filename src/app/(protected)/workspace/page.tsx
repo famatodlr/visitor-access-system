@@ -23,8 +23,8 @@ export default function WorkspacePage() {
         </p>
         <h2 className="mt-2 text-3xl font-bold">Workspace</h2>
         <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
-          Start from the primary guard workflows. Visitor registration and
-          lookup flows will be added in the next feature commits.
+          Start from the primary guard workflows. Register new visitors or look
+          up existing visitor records before handling access.
         </p>
       </div>
 
@@ -49,7 +49,7 @@ export default function WorkspacePage() {
                 className="mt-6 inline-flex rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
                 href={action.href}
               >
-                Register visitor
+                {action.ctaLabel}
               </Link>
             ) : (
               <button

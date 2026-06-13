@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   normalizeDni,
+  parseVisitorDniSearchInput,
   parseVisitorRegistrationInput,
 } from "./validation.ts";
 
@@ -52,4 +53,36 @@ test("parseVisitorRegistrationInput rejects missing and empty required fields", 
 
 test("normalizeDni removes whitespace and uppercases letters", () => {
   assert.equal(normalizeDni("  ab 123 cd "), "AB123CD");
+});
+
+test("parseVisitorDniSearchInput normalizes dni like visitor registration", () => {
+  const result = parseVisitorDniSearchInput({
+    dni: "  12 345 abc  ",
+  });
+
+  assert.equal(result.ok, true);
+
+  if (!result.ok) {
+    throw new Error("Expected a valid DNI search payload.");
+  }
+
+  assert.deepEqual(result.data, {
+    dni: "12345ABC",
+  });
+});
+
+test("parseVisitorDniSearchInput rejects missing and empty dni", () => {
+  const result = parseVisitorDniSearchInput({
+    dni: "   ",
+  });
+
+  assert.equal(result.ok, false);
+
+  if (result.ok) {
+    throw new Error("Expected DNI validation errors.");
+  }
+
+  assert.deepEqual(result.errors, [
+    { field: "dni", message: "DNI is required." },
+  ]);
 });

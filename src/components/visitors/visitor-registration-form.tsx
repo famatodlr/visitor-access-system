@@ -83,6 +83,7 @@ function toSpanishRegistrationFieldError(message: string): string {
   const messages: Record<string, string> = {
     "Name is required.": "Ingrese el nombre.",
     "DNI is required.": "Ingrese el DNI.",
+    "DNI must contain 7 or 8 digits.": "El DNI debe tener 7 u 8 dígitos.",
     "Company is required.": "Ingrese la empresa.",
     "Sector is required.": "Ingrese el sector.",
     "Photo data URL is required.": "Capture una foto con la cámara.",

@@ -3,63 +3,34 @@ import Link from "next/link";
 import { WORKSPACE_ACTIONS } from "@/components/workspace/workspace-actions";
 
 export default function WorkspacePage() {
-  function getActionAnchor(index: number) {
-    if (index === 0) {
-      return "register-visitor";
-    }
-
-    if (index === 1) {
-      return "search-visitor";
-    }
-
-    return undefined;
-  }
-
   return (
     <section>
-      <div className="max-w-3xl">
+      <div className="max-w-2xl">
         <p className="text-sm font-semibold text-[var(--primary)]">
-          Protected area
+          Panel operativo
         </p>
-        <h2 className="mt-2 text-3xl font-bold">Workspace</h2>
-        <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
-          Start from the primary guard workflows. Register new visitors or look
-          up existing visitor records before handling access.
+        <h2 className="mt-2 text-2xl font-bold">Panel operativo</h2>
+        <p className="mt-3 text-base leading-7 text-[var(--text-secondary)]">
+          Seleccione una tarea para registrar, consultar o validar accesos.
         </p>
       </div>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-2">
-        {WORKSPACE_ACTIONS.map((action, index) => (
+      <div className="mt-8 grid gap-5 md:grid-cols-3">
+        {WORKSPACE_ACTIONS.map((action) => (
           <article
-            className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-lg shadow-black/10"
-            id={getActionAnchor(index)}
+            className="flex min-h-52 flex-col rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6"
             key={action.title}
           >
-            <div className="flex items-start justify-between gap-4">
-              <h3 className="text-xl font-bold">{action.title}</h3>
-              <span className="shrink-0 rounded-full border border-[var(--border)] bg-[var(--surface-elevated)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]">
-                {action.status}
-              </span>
-            </div>
-            <p className="mt-4 text-base leading-7 text-[var(--text-secondary)]">
+            <h3 className="text-xl font-bold">{action.title}</h3>
+            <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
               {action.description}
             </p>
-            {action.href ? (
-              <Link
-                className="mt-6 inline-flex rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--primary-hover)]"
-                href={action.href}
-              >
-                {action.ctaLabel}
-              </Link>
-            ) : (
-              <button
-                className="mt-6 rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-2 text-sm font-semibold text-[var(--text-secondary)] disabled:cursor-not-allowed disabled:opacity-70"
-                disabled
-                type="button"
-              >
-                Available soon
-              </button>
-            )}
+            <Link
+              className="mt-auto inline-flex justify-center rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--primary-hover)]"
+              href={action.href}
+            >
+              {action.ctaLabel}
+            </Link>
           </article>
         ))}
       </div>

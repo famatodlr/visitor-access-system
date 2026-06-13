@@ -1,36 +1,27 @@
 export interface WorkspaceAction {
   title: string;
   description: string;
-  status: "Available" | "Coming next";
-  href?: string;
-  ctaLabel?: string;
+  href: string;
+  ctaLabel: string;
 }
 
 export const WORKSPACE_ACTIONS: WorkspaceAction[] = [
   {
-    title: "Register visitor",
-    description: "Create a visitor record, capture identification data, and prepare the access credential.",
-    status: "Available",
+    title: "Registrar visitante",
+    description: "Alta rápida con foto y credencial.",
     href: "/workspace/visitors/new",
-    ctaLabel: "Register visitor",
+    ctaLabel: "Registrar",
   },
   {
-    title: "Search visitor by DNI",
-    description: "Find an existing visitor quickly before registering a repeat entry.",
-    status: "Available",
+    title: "Buscar por DNI",
+    description: "Consultar datos e historial.",
     href: "/workspace/visitors/search",
-    ctaLabel: "Search visitor",
+    ctaLabel: "Buscar",
   },
   {
-    title: "Validate QR / repeat entry",
-    description: "Scan a saved credential and record a new facility entry.",
-    status: "Available",
+    title: "Validar QR",
+    description: "Registrar un nuevo ingreso.",
     href: "/workspace/visitors/qr/validate",
-    ctaLabel: "Validate QR",
-  },
-  {
-    title: "Visitor entries/history",
-    description: "Review recent access records for registered visitors.",
-    status: "Coming next",
+    ctaLabel: "Validar QR",
   },
 ];

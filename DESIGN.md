@@ -102,6 +102,8 @@ Do not add a theme toggle.
 
 The palette should feel professional, operational and serious. It should support long periods of use by security personnel without feeling decorative or visually noisy.
 
+Large background areas should be near-black and neutral, not visibly blue. Blue is reserved for primary actions, focus states and small section accents.
+
 Primary
 
 --primary: #2563EB;
@@ -151,10 +153,10 @@ Used for:
 
 Neutral
 
---background: #0B1120;
+--background: #09090B;
 --surface: #111827;
---surface-elevated: #1F2937;
---border: #334155;
+--surface-elevated: #1A2230;
+--border: #2A3445;
 --text: #F8FAFC;
 --text-secondary: #94A3B8;
 
@@ -216,14 +218,15 @@ Structure:
 
 Header
 │
-├── Register Visitor
-└── Search Visitor
+└── Product identity + logout
 
 No sidebars.
 
 No multi-level menus.
 
 No dashboard navigation.
+
+Do not add secondary navigation links to the top header.
 
 ⸻
 
@@ -245,16 +248,21 @@ The login page should feel lightweight and secure.
 
 Main Workspace
 
-The main workspace contains two primary actions:
+The main workspace contains the real available workflows:
 
 Register Visitor
 Search Visitor
+Validate QR
 
 These actions should be visible immediately after login.
 
 Use cards or tabs.
 
 Never hide them inside menus.
+
+Do not show unavailable or coming-soon workflows in the main workspace.
+
+Keep workspace copy short and operational. Each card should use a short title, one concise helper line at most and a direct action button.
 
 ⸻
 

@@ -21,7 +21,7 @@ export default async function VisitorDetailPage({
           history.
         </p>
         <Link
-          className="mt-6 inline-flex rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)]"
+          className="mt-6 inline-flex rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)]"
           href="/workspace/visitors/search"
         >
           Back to search

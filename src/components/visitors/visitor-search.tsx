@@ -112,7 +112,7 @@ export function VisitorSearch() {
           </label>
           <input
             autoComplete="off"
-            className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+            className="mt-2 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary-hover)] focus:ring-2 focus:ring-[var(--primary)]/30 disabled:cursor-not-allowed disabled:opacity-70"
             disabled={isSearching}
             id="visitor-search-dni"
             inputMode="numeric"
@@ -135,13 +135,13 @@ export function VisitorSearch() {
           ) : null}
 
           {formError ? (
-            <p className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--error)]">
+            <p className="mt-6 rounded-lg border border-[var(--error)]/40 bg-[var(--error)]/10 px-4 py-3 text-sm font-medium text-[var(--error)]">
               {formError}
             </p>
           ) : null}
 
           {wasNotFound ? (
-            <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+            <div className="mt-6 rounded-lg border border-[var(--warning)]/40 bg-[var(--warning)]/10 px-4 py-3">
               <p className="text-sm font-semibold text-[var(--text)]">
                 No visitor found for this DNI.
               </p>
@@ -149,7 +149,7 @@ export function VisitorSearch() {
                 Register the visitor to create their first access credential.
               </p>
               <Link
-                className="mt-4 inline-flex rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
+                className="mt-4 inline-flex rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--primary-hover)]"
                 href="/workspace/visitors/new"
               >
                 Register visitor
@@ -159,14 +159,14 @@ export function VisitorSearch() {
 
           <div className="mt-6 flex flex-col gap-4 sm:flex-row">
             <button
-              className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400 sm:flex-1"
+              className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:bg-[var(--surface-elevated)] disabled:text-[var(--text-secondary)] sm:flex-1"
               disabled={isSearching}
               type="submit"
             >
               {isSearching ? "Searching..." : "Search visitor"}
             </button>
             <Link
-              className="rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-center text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)] sm:flex-1"
+              className="rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-center text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)] sm:flex-1"
               href="/workspace"
             >
               Return to workspace

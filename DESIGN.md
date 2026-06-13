@@ -94,9 +94,18 @@ Gaming-inspired
 
 Colors
 
+The application uses a dark default theme.
+
+This is the only theme.
+
+Do not add a theme toggle.
+
+The palette should feel professional, operational and serious. It should support long periods of use by security personnel without feeling decorative or visually noisy.
+
 Primary
 
---primary: #1E40AF;
+--primary: #2563EB;
+--primary-hover: #3B82F6;
 
 Used for:
 
@@ -108,7 +117,7 @@ Used for:
 
 Success
 
---success: #15803D;
+--success: #22C55E;
 
 Used for:
 
@@ -119,7 +128,7 @@ Used for:
 
 Error
 
---error: #DC2626;
+--error: #F87171;
 
 Used for:
 
@@ -128,15 +137,28 @@ Used for:
 
 ⸻
 
+Warning
+
+--warning: #F59E0B;
+
+Used for:
+
+* camera availability warnings;
+* permission or device guidance;
+* cautionary states that are not failures.
+
+⸻
+
 Neutral
 
---background: #F8FAFC;
---surface: #FFFFFF;
---border: #E2E8F0;
---text: #0F172A;
---text-secondary: #64748B;
+--background: #0B1120;
+--surface: #111827;
+--surface-elevated: #1F2937;
+--border: #334155;
+--text: #F8FAFC;
+--text-secondary: #94A3B8;
 
-The application should primarily use neutral colors.
+The application should primarily use dark neutral colors.
 
 Color is reserved for meaning.
 
@@ -263,6 +285,10 @@ The credential is the most important visual artifact in the application.
 
 It should resemble a real access credential.
 
+The app surrounding the credential should follow the dark default theme.
+
+The credential itself may remain light or white so the printed output is readable on paper.
+
 Displayed information:
 
 Photo
@@ -279,6 +305,8 @@ The QR code should be large and easy to scan.
 Printing
 
 Credentials should be printable.
+
+Printed credentials should remain clean, high contrast and paper-readable even when the application interface is dark.
 
 Use:
 
@@ -334,12 +362,14 @@ Cards
 
 Default style:
 
-background: white;
+background: var(--surface);
 border: 1px solid var(--border);
 border-radius: 12px;
 padding: 24px;
 
 Cards are the primary layout primitive.
+
+Use var(--surface-elevated) for nested controls, inputs, preview wells and status panels.
 
 ⸻
 
@@ -349,14 +379,17 @@ Primary button:
 
 Blue background
 White text
+Brighter blue hover state
 
 Secondary button:
 
-White background
+Dark elevated background
 Border
-Dark text
+Near-white text
 
 Buttons should be clearly distinguishable.
+
+Loading and disabled buttons should look inactive and should not rely only on text changes.
 
 ⸻
 
@@ -367,6 +400,7 @@ Forms should:
 * show labels above fields;
 * validate immediately when possible;
 * display errors near the field.
+* keep focus states highly visible on dark backgrounds.
 
 Do not rely on placeholders as labels.
 
@@ -434,7 +468,6 @@ Out of Scope
 
 The design intentionally excludes:
 
-* dark mode;
 * complex dashboards;
 * charts;
 * analytics screens;
@@ -442,6 +475,7 @@ The design intentionally excludes:
 * animated backgrounds;
 * glassmorphism;
 * heavy gradients.
+* theme toggles.
 
 The visual language should remain simple and operational.
 

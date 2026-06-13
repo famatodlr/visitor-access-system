@@ -215,7 +215,7 @@ export function VisitorQrScanner() {
         </div>
 
         {status === "idle" ? (
-          <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+          <div className="mt-6 rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3">
             <p className="text-sm font-semibold text-[var(--text)]">
               Ready to scan
             </p>
@@ -226,25 +226,25 @@ export function VisitorQrScanner() {
         ) : null}
 
         {status === "starting" ? (
-          <p className="mt-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-[var(--text-secondary)]">
+          <p className="mt-6 rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-sm font-semibold text-[var(--text-secondary)]">
             Starting camera...
           </p>
         ) : null}
 
         {status === "scanning" ? (
-          <p className="mt-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-[var(--primary)]">
+          <p className="mt-6 rounded-lg border border-[var(--primary)]/50 bg-[var(--primary)]/10 px-4 py-3 text-sm font-semibold text-[var(--primary-hover)]">
             Scanning QR credential...
           </p>
         ) : null}
 
         {status === "validating" ? (
-          <p className="mt-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-[var(--text-secondary)]">
+          <p className="mt-6 rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-sm font-semibold text-[var(--text-secondary)]">
             Validating credential...
           </p>
         ) : null}
 
         {status === "error" && message ? (
-          <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+          <div className="mt-6 rounded-lg border border-[var(--error)]/40 bg-[var(--error)]/10 px-4 py-3">
             <p className="text-sm font-semibold text-[var(--error)]">
               {message}
             </p>
@@ -252,7 +252,7 @@ export function VisitorQrScanner() {
         ) : null}
 
         {status === "success" && confirmation?.visitor && confirmation.entry ? (
-          <div className="mt-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+          <div className="mt-6 rounded-lg border border-[var(--success)]/40 bg-[var(--success)]/10 px-4 py-3">
             <p className="text-sm font-semibold text-[var(--success)]">
               Entry registered
             </p>
@@ -298,7 +298,7 @@ export function VisitorQrScanner() {
         <div className="mt-6 flex flex-col gap-4 sm:flex-row">
           {status === "success" || status === "error" ? (
             <button
-              className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-blue-800 sm:flex-1"
+              className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-[var(--primary-hover)] sm:flex-1"
               onClick={resetScanner}
               type="button"
             >
@@ -306,7 +306,7 @@ export function VisitorQrScanner() {
             </button>
           ) : (
             <button
-              className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400 sm:flex-1"
+              className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:bg-[var(--surface-elevated)] disabled:text-[var(--text-secondary)] sm:flex-1"
               disabled={isBusy || isScanning}
               onClick={startScanner}
               type="button"
@@ -315,7 +315,7 @@ export function VisitorQrScanner() {
             </button>
           )}
           <Link
-            className="rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-center text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)] sm:flex-1"
+            className="rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-center text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)] sm:flex-1"
             href="/workspace"
           >
             Return to workspace

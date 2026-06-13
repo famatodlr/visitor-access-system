@@ -23,7 +23,7 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
             className="flex flex-wrap items-center gap-4"
           >
             <Link
-              className="text-sm font-semibold text-[var(--text)]"
+              className="text-sm font-semibold text-[var(--text)] transition hover:text-[var(--primary-hover)]"
               href="/workspace/visitors/new"
             >
               Register Visitor

@@ -22,7 +22,7 @@ export function LogoutButton() {
 
   return (
     <button
-      className="rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--text)] transition hover:border-[var(--primary)] hover:text-[var(--primary)] disabled:cursor-not-allowed disabled:text-[var(--text-secondary)]"
+      className="rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-2 text-sm font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-60"
       disabled={isLoggingOut}
       onClick={handleLogout}
       type="button"

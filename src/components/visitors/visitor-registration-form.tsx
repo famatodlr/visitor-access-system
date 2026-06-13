@@ -300,7 +300,7 @@ export function VisitorRegistrationForm() {
         />
         <div className="print-hidden mt-6">
           <Link
-            className="inline-flex rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)]"
+            className="inline-flex rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)]"
             href="/workspace"
           >
             Return to workspace
@@ -325,7 +325,7 @@ export function VisitorRegistrationForm() {
               </label>
               <input
                 autoComplete="name"
-                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary-hover)] focus:ring-2 focus:ring-[var(--primary)]/30 disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={isSubmitting}
                 id="visitor-name"
                 name="name"
@@ -350,7 +350,7 @@ export function VisitorRegistrationForm() {
               </label>
               <input
                 autoComplete="off"
-                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary-hover)] focus:ring-2 focus:ring-[var(--primary)]/30 disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={isSubmitting}
                 id="visitor-dni"
                 name="dni"
@@ -375,7 +375,7 @@ export function VisitorRegistrationForm() {
               </label>
               <input
                 autoComplete="organization"
-                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary-hover)] focus:ring-2 focus:ring-[var(--primary)]/30 disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={isSubmitting}
                 id="visitor-company"
                 name="company"
@@ -402,7 +402,7 @@ export function VisitorRegistrationForm() {
               </label>
               <input
                 autoComplete="off"
-                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+                className="mt-2 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base text-[var(--text)] outline-none transition focus:border-[var(--primary-hover)] focus:ring-2 focus:ring-[var(--primary)]/30 disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={isSubmitting}
                 id="visitor-sector"
                 name="sector"
@@ -420,21 +420,21 @@ export function VisitorRegistrationForm() {
           </div>
 
           {formError ? (
-            <p className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-[var(--error)]">
+            <p className="mt-6 rounded-lg border border-[var(--error)]/40 bg-[var(--error)]/10 px-4 py-3 text-sm font-medium text-[var(--error)]">
               {formError}
             </p>
           ) : null}
 
           <div className="mt-6 flex flex-col gap-4 sm:flex-row">
             <button
-              className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400 sm:flex-1"
+              className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:bg-[var(--surface-elevated)] disabled:text-[var(--text-secondary)] sm:flex-1"
               disabled={isSubmitting}
               type="submit"
             >
               {isSubmitting ? "Registering..." : "Register visitor"}
             </button>
             <Link
-              className="rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-center text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)] sm:flex-1"
+              className="rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-center text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)] sm:flex-1"
               href="/workspace"
             >
               Return to workspace
@@ -445,7 +445,7 @@ export function VisitorRegistrationForm() {
         <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
           <h3 className="text-xl font-bold">Photo Capture</h3>
 
-          <div className="mt-6 overflow-hidden rounded-lg border border-[var(--border)] bg-slate-100">
+          <div className="mt-6 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)]">
             {photoDataUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -479,7 +479,7 @@ export function VisitorRegistrationForm() {
             {isCameraActive ? (
               <>
                 <button
-                  className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-blue-800"
+                  className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:bg-[var(--surface-elevated)] disabled:text-[var(--text-secondary)]"
                   disabled={isSubmitting}
                   onClick={capturePhoto}
                   type="button"
@@ -487,7 +487,7 @@ export function VisitorRegistrationForm() {
                   Capture photo
                 </button>
                 <button
-                  className="rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)]"
+                  className="rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-70"
                   disabled={isSubmitting}
                   onClick={stopCamera}
                   type="button"
@@ -497,7 +497,7 @@ export function VisitorRegistrationForm() {
               </>
             ) : (
               <button
-                className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+                className="rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:bg-[var(--surface-elevated)] disabled:text-[var(--text-secondary)]"
                 disabled={isSubmitting || isStartingCamera}
                 onClick={startCamera}
                 type="button"
@@ -508,7 +508,7 @@ export function VisitorRegistrationForm() {
 
             {photoDataUrl ? (
               <button
-                className="rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary)]"
+                className="rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base font-semibold text-[var(--text)] transition hover:border-[var(--primary-hover)] hover:text-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-70"
                 disabled={isSubmitting}
                 onClick={() => setPhotoDataUrl(null)}
                 type="button"
@@ -527,7 +527,7 @@ export function VisitorRegistrationForm() {
             </label>
             <input
               accept="image/*"
-              className="mt-2 w-full rounded-lg border border-[var(--border)] bg-white px-4 py-3 text-base text-[var(--text)] file:mr-4 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[var(--text)]"
+              className="mt-2 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] px-4 py-3 text-base text-[var(--text)] file:mr-4 file:rounded-md file:border-0 file:bg-[var(--border)] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-70"
               disabled={isSubmitting}
               id="visitor-photo-upload"
               onChange={handlePhotoUpload}

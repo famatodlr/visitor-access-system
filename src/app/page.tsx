@@ -13,7 +13,7 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-[var(--background)] px-6 py-8 text-[var(--text)]">
       <section className="mx-auto flex min-h-[calc(100vh-64px)] max-w-[1200px] items-center justify-center">
-        <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--surface)] p-8">
+        <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-2xl shadow-black/20">
           <p className="mb-2 text-sm font-semibold text-[var(--primary)]">
             Secure access
           </p>

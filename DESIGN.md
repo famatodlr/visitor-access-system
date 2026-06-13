@@ -106,8 +106,8 @@ Large background areas should use neutral charcoal and slate tones, not pure bla
 
 Primary
 
---primary: #1D4ED8;
---primary-hover: #2563EB;
+--primary: #1E40AF;
+--primary-hover: #1D4ED8;
 
 Used for:
 
@@ -153,10 +153,10 @@ Used for:
 
 Neutral
 
---background: #111113;
+--background: #0F1013;
 --surface: #181A20;
---surface-elevated: #20232A;
---border: #2F333C;
+--surface-elevated: #22252C;
+--border: #323743;
 --text: #F4F4F5;
 --text-secondary: #A1A1AA;
 
@@ -264,7 +264,9 @@ Do not show unavailable or coming-soon workflows in the main workspace.
 
 Keep workspace copy short and operational. Each card should use a short title, one concise helper line at most and a direct action button.
 
-Workflow cards may use a small functional icon or visual mark as an anchor between helper text and the action button.
+The workspace should read as a focused action launcher. Center the page heading, helper text and workflow card contents so the three available actions are easy to scan from several feet away.
+
+Workflow cards may use a functional icon or visual mark as an anchor between helper text and the action button. Icons in this area may be larger than secondary UI icons when they improve scanning.
 
 Icons are supportive only. They must not replace text labels, introduce decorative complexity or use loud colors.
 
